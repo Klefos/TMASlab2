@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMALCULES - Il Micro-Regno Incantato</title>
+    
+    <!-- Fonts giocosi e fiabeschi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'magic': ['"Fredoka One"', 'cursive'],
+                        'body': ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        enchanted: {
+                            bg: '#1a0b2e',
+                            path: '#21cf8d',
+                            magic: '#d81159',
+                            glow: '#0EA5E9'
+                        }
+                    },
+                    animation: {
+                        'float': 'float 4s ease-in-out infinite',
+                        'float-delayed': 'float 5s ease-in-out infinite 2s',
+                        'float-slow': 'float 6s ease-in-out infinite 1s',
+                        'bounce-slow': 'bounce 4s infinite',
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                        'pop-in': 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        'spin-shrink': 'spinShrink 0.8s ease-in forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-20px) rotate(5deg)' },
+                        },
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-4px, 0, 0) rotate(-5deg)' },
+                            '20%, 80%': { transform: 'translate3d(8px, 0, 0) rotate(5deg)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-12px, 0, 0) rotate(-5deg)' },
+                            '40%, 60%': { transform: 'translate3d(12px, 0, 0) rotate(5deg)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { filter: 'drop-shadow(0 0 10px rgba(33, 207, 141, 0.5))' },
+                            '50%': { filter: 'drop-shadow(0 0 25px rgba(33, 207, 141, 0.9))' }
+                        },
+                        spinShrink: {
+                            '0%': { transform: 'scale(1) rotate(0deg)', opacity: '1' },
+                            '50%': { transform: 'scale(1.2) rotate(180deg)', opacity: '0.8' },
+                            '100%': { transform: 'scale(0) rotate(720deg)', opacity: '0' }
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.5)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #1a0b2e;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(216, 17, 89, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(14, 165, 233, 0.15) 0%, transparent 50%);
+            color: white;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .glass-panel {
+            background: rgba(40, 20, 60, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.05);
+        }
+
+        /* Bottoni */
+        .magic-btn {
+            background: linear-gradient(135deg, #21cf8d, #0EA5E9);
+            box-shadow: 0 6px 0 #107e54, 0 15px 20px rgba(33, 207, 141, 0.4);
+            transition: all 0.1s;
+        }
+        .magic-btn:hover {
+            transform: translateY(2px);
+            box-shadow: 0 4px 0 #107e54, 0 10px 15px rgba(33, 207, 141, 0.4);
+        }
+        .magic-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #107e54, 0 5px 10px rgba(33, 207, 141, 0.4);
+        }
+
+        /* Opzioni del Quiz */
+        .quiz-option {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .quiz-option:hover {
+            transform: scale(1.02) translateX(10px);
+            background: rgba(255,255,255,0.15);
+            border-color: #21cf8d;
+        }
+
+        /* Mostri disabilitati */
+        .monster-locked {
+            filter: grayscale(100%) opacity(0.4) blur(1px);
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+
+        /* Sentiero animato */
+        .path-line {
+            stroke-dasharray: 20 20;
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -1000; }
+        }
+
+        /* Scintille della sconfitta */
+        .sparkle {
+            position: absolute;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 50;
+        }
+
+        /* Pedina Giocatore */
+        #player-pawn {
+            position: absolute;
+            transition: top 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translate(-50%, -50%);
+            z-index: 30;
+        }
+        
+        /* Personalizzazione Scrollbar per il testo iniziale */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #21cf8d;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="font-body antialiased min-h-screen relative selection:bg-enchanted-magic selection:text-white">
+
+    <!-- SFONDO GIOCOSO: Particelle, Pillole e Mostriciattoli -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <!-- Luci soffuse magiche -->
+        <div class="absolute top-20 left-10 w-32 h-32 bg-yellow-300 rounded-full blur-[100px] animate-float opacity-20"></div>
+        <div class="absolute top-1/3 right-20 w-40 h-40 bg-pink-500 rounded-full blur-[120px] animate-float-delayed opacity-20"></div>
+        
+        <!-- Pillola 1 (Rosa/Bianca) -->
+        <svg class="absolute top-[10%] left-[5%] w-12 h-12 text-pink-400 opacity-30 animate-float rotate-45" viewBox="0 0 100 100">
+            <rect x="30" y="20" width="40" height="60" rx="20" fill="currentColor"/>
+            <path d="M30 50 h40 v10 a20 20 0 0 1 -40 0 z" fill="#fff" opacity="0.8"/>
+        </svg>
+
+        <!-- Mostriciattolo Coccus 1 (Viola) -->
+        <svg class="absolute top-[20%] right-[10%] w-16 h-16 text-purple-400 opacity-20 animate-float-delayed -rotate-12" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="currentColor" />
+            <circle cx="35" cy="40" r="4" fill="#1a0b2e"/><circle cx="65" cy="40" r="4" fill="#1a0b2e"/>
+            <path d="M 40 65 Q 50 75 60 65" stroke="#1a0b2e" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </svg>
+
+        <!-- Compressa rotonda -->
+        <svg class="absolute top-[40%] left-[15%] w-10 h-10 text-orange-400 opacity-25 animate-float-slow rotate-12" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="currentColor"/>
+            <line x1="20" y1="50" x2="80" y2="50" stroke="#1a0b2e" stroke-width="6" opacity="0.5"/>
+        </svg>
+
+        <!-- Pillola 2 (Azzurra/Bianca) -->
+        <svg class="absolute bottom-[20%] right-[15%] w-14 h-14 text-cyan-400 opacity-30 animate-float -rotate-45" viewBox="0 0 100 100">
+            <rect x="30" y="20" width="40" height="60" rx="20" fill="currentColor"/>
+            <path d="M30 50 h40 v10 a20 20 0 0 1 -40 0 z" fill="#fff" opacity="0.8"/>
+        </svg>
+
+        <!-- Mostriciattolo Bacillus (Arancione) -->
+        <svg class="absolute bottom-[30%] left-[8%] w-20 h-20 text-orange-500 opacity-20 animate-bounce-slow rotate-12" viewBox="0 0 100 100">
+            <rect x="20" y="30" width="60" height="40" rx="20" fill="currentColor"/>
+            <circle cx="40" cy="45" r="4" fill="#1a0b2e"/><circle cx="60" cy="45" r="4" fill="#1a0b2e"/>
+            <path d="M 40 60 L 60 60" stroke="#1a0b2e" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        
+        <!-- Piccole bollicine/puntini sparsi -->
+        <div class="absolute top-1/4 left-1/2 w-4 h-4 bg-yellow-300 rounded-full animate-float opacity-40"></div>
+        <div class="absolute bottom-1/3 right-1/3 w-6 h-6 bg-pink-400 rounded-full animate-float-delayed opacity-30"></div>
+    </div>
+
+    <!-- SCREEN 1: IL PROLOGO (La Storia) -->
+    <div id="screen-story" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 transition-opacity duration-500">
+        <div class="glass-panel rounded-[2rem] p-8 md:p-12 w-full max-w-5xl h-[90vh] flex flex-col relative overflow-hidden animate-pop-in">
+            
+         <h1 class="font-magic text-4xl md:text-5xl mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-fuchsia-500 to-orange-400 drop-shadow-lg shrink-0 pb-2 leading-normal">
+                Il Micro-Regno Incantato
+            </h1>
+            
+            <div class="overflow-y-auto custom-scrollbar flex-grow pr-4 space-y-6 text-lg md:text-xl text-slate-200 leading-relaxed font-semibold">
+                <p>
+                    Sapevate che il nostro mondo è pieno di minuscole creature invisibili agli occhi? Si chiamano <span class="text-white font-bold">batteri</span>! Molti di loro sono nostri preziosi amici e ci aiutano a digerire, ma alcuni sono patogeni dispettosi che si divertono a farci ammalare.
+                </p>
+                <p>
+                    Per fortuna, quasi 100 anni fa, un geniale scienziato di nome <span class="text-white font-bold">Alexander Fleming</span> scoprì per caso qualcosa di straordinario. Nel suo laboratorio notò che un fungo produceva una sostanza speciale, capace di sconfiggere i batteri cattivi che vi si avvicinavano. Era nata la <span class="text-enchanted-path font-bold text-2xl">Penicillina</span>, il primo antibiotico naturale della storia!
+                </p>
+
+                <h3 class="font-magic text-2xl text-enchanted-glow mt-8 mb-2">Come funzionano queste Armi Magiche?</h3>
+                <p>
+                    Immaginate gli antibiotici come dei minuscoli cavalieri corazzati. <br>
+                    Alcuni, come la Penicillina (che è un'arma creata direttamente dalla natura), sono veri e propri maestri d'assedio: la loro specialità è attaccare e <span class="text-white font-bold">distruggere la parete cellulare</span>, ovvero le forti "mura" protettive del castello batterico.
+                </p>
+                <p>
+                    Altri cavalieri, invece, non esistono in natura ma sono stati inventati dai nostri scienziati in laboratorio: sono gli <span class="text-enchanted-magic font-bold text-2xl">Antibiotici Sintetici</span>, come ad esempio i fluorochinoloni. Loro non attaccano le mura, ma entrano di nascosto nel batterio e <span class="text-white font-bold">bloccano la sintesi proteica</span>, impedendogli di costruire le proteine di cui ha bisogno per vivere.
+                </p>
+
+                <h3 class="font-magic text-2xl text-red-400 mt-8 mb-2">La Minaccia dell'Antibiotico-Resistenza</h3>
+                <p>
+                    Ma fate attenzione! I batteri sono nemici estremamente furbi e si adattano velocemente. Se usiamo male le nostre pozioni magiche, loro studiano le nostre armi e imparano a difendersi. Attraverso <span class="text-white font-bold">mutazioni genetiche e selezione naturale</span>, i batteri più forti sopravvivono anche in presenza di quella medicina. 
+                </p>
+                <p>
+                    Questa magia oscura si chiama <span class="text-red-400 font-bold">Antibiotico-resistenza</span> e crea dei super-batteri difficilissimi da sconfiggere! Usano trucchetti perfidi, ad esempio costruiscono le <span class="text-white font-bold">pompe di efflusso</span> per "sputare" fuori l'antibiotico prima che faccia loro male, oppure creano enzimi (come le <span class="text-white font-bold">Beta-lattamasi</span>) capaci di distruggere la struttura chimica dell'antibiotico rendendolo innocuo. 
+                    Peggio ancora: i batteri possono passarsi questi "super-poteri" scambiandosi dei pacchetti segreti di DNA chiamati <span class="text-white font-bold">plasmidi</span>!
+                </p>
+                <p>
+                    Il problema è così grave che è diventato un'emergenza mondiale, e la colpa è soprattutto dell'<span class="text-white font-bold">abuso e dell'uso scorretto degli antibiotici</span>, non solo da parte delle persone, ma anche delle grandissime fattorie (gli <span class="text-white font-bold">allevamenti intensivi</span>) dove vengono dati agli animali!
+                </p>
+
+                <h3 class="font-magic text-2xl text-yellow-400 mt-8 mb-2">Le Regole dei Veri Ricercatori</h3>
+                <p>
+                    Per proteggere il Micro-Regno e non perdere l'efficacia di questi farmaci, dobbiamo rispettare quattro Regole d'Oro:
+                </p>
+                <ul class="list-disc pl-8 space-y-2 mt-4 text-white">
+                    <li><span class="text-enchanted-path font-bold">Regola 1:</span> Usa gli antibiotici <span class="underline">solo contro i batteri</span>! Contro i virus (come quello che causa il raffreddore) non servono assolutamente a nulla, perché i virus non sono cellule vive.</li>
+                    <li><span class="text-enchanted-path font-bold">Regola 2:</span> Ascolta sempre il tuo medico. Non prendere mai antibiotici avanzati dalla scatola dell'anno scorso senza averglielo chiesto!</li>
+                    <li><span class="text-enchanted-path font-bold">Regola 3:</span> <span class="underline">Completa tutta la cura prescritta!</span> Non smettere di prendere l'antibiotico appena ti senti meglio. Se ti fermi in anticipo, i batteri più resistenti che non sono ancora morti sopravvivono e diventano ancora più forti!</li>
+                    <li><span class="text-enchanted-path font-bold">Regola 4:</span> <span class="underline">Lavati sempre bene le mani!</span> È l'abitudine igienica più semplice ed efficace in assoluto per fermare la diffusione dei batteri.</li>
+                </ul>
+
+                <p class="text-center text-enchanted-glow font-bold mt-12 text-2xl">
+                    Leggi attentamente queste pergamene... <br>Tutte le risposte della tua avventura si nascondono qui dentro!
+                </p>
+            </div>
+
+            <div class="mt-8 text-center shrink-0">
+                <button onclick="goToDifficultySelection()" class="magic-btn font-magic text-2xl text-white px-10 py-4 rounded-2xl w-full md:w-auto inline-flex items-center justify-center gap-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Inizia la Sfida
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: START SCREEN (SELEZIONE LIVELLO) -->
+    <div id="screen-start" class="fixed inset-0 z-50 hidden items-center justify-center p-4 transition-opacity duration-500 overflow-y-auto">
+        <div class="glass-panel rounded-[2rem] p-8 md:p-12 w-full max-w-4xl text-center relative overflow-hidden my-8 transform scale-95 transition-transform duration-500" id="start-panel">
+            
+            <h1 class="font-magic text-5xl md:text-7xl mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-fuchsia-500 to-orange-400 drop-shadow-lg leading-tight">
+                Il Micro-Regno<br>Incantato
+            </h1>
+            <p class="text-lg md:text-xl text-blue-100 mb-10 font-semibold">
+                Hai studiato le pergamene? Scegli la difficoltà del sentiero!
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <button onclick="startGame(7)" class="group glass-panel border border-brand-green/30 p-8 rounded-2xl hover:bg-white/10 transition-all hover:-translate-y-2 text-center flex flex-col items-center">
+                    <div class="text-5xl mb-4 group-hover:scale-125 transition-transform">🌱</div>
+                    <h3 class="font-magic text-2xl text-enchanted-path mb-2">Apprendista Curioso</h3>
+                    <p class="text-sm text-slate-300">7 Domande<br>(Percorso Breve)</p>
+                </button>
+                <button onclick="startGame(14)" class="group glass-panel border border-yellow-400/30 p-8 rounded-2xl hover:bg-white/10 transition-all hover:-translate-y-2 text-center flex flex-col items-center">
+                    <div class="text-5xl mb-4 group-hover:scale-125 transition-transform">🔬</div>
+                    <h3 class="font-magic text-2xl text-yellow-400 mb-2">Esploratore Audace</h3>
+                    <p class="text-sm text-slate-300">14 Domande<br>(Percorso Medio)</p>
+                </button>
+                <button onclick="startGame(20)" class="group glass-panel border border-enchanted-magic/30 p-8 rounded-2xl hover:bg-white/10 transition-all hover:-translate-y-2 text-center flex flex-col items-center">
+                    <div class="text-5xl mb-4 group-hover:scale-125 transition-transform">🦸‍♂️</div>
+                    <h3 class="font-magic text-2xl text-enchanted-magic mb-2">Eroe del Laboratorio</h3>
+                    <p class="text-sm text-slate-300">20 Domande<br>(Percorso Completo)</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAP SCREEN -->
+    <div id="screen-map" class="hidden relative w-full max-w-5xl mx-auto py-10 px-4 opacity-0 transition-opacity duration-500 min-h-screen">
+        <div class="sticky top-4 z-40 glass-panel rounded-2xl p-4 md:p-6 flex justify-between items-center mb-12 shadow-2xl">
+            <div class="font-magic text-xl md:text-2xl text-enchanted-path flex items-center gap-2">
+                <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                Sentiero
+            </div>
+            <div class="text-white font-bold text-lg md:text-xl bg-white/10 px-6 py-2 rounded-full border border-white/10">
+                Sconfitti: <span id="score-display" class="text-enchanted-path">0</span>
+            </div>
+        </div>
+
+        <div id="game-area" class="relative w-full pb-40">
+            <svg id="svg-layer" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0" preserveAspectRatio="none">
+                <path id="dynamic-path-glow" fill="none" stroke="rgba(33, 207, 141, 0.2)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                <path id="dynamic-path" fill="none" stroke="#21cf8d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="path-line"/>
+            </svg>
+
+<!-- Pedina Animata Giocatore (Bambino Ricercatore Segnaposto) -->
+            <!-- Importante: ho modificato leggermente i margini per far sì che la "punta" del pin sia esattamente al centro del nodo -->
+            <div id="player-pawn" class="w-16 h-20 hidden" style="transform: translate(-50%, -100%); margin-top: 10px;">
+                <svg viewBox="0 0 100 130" class="w-full h-full drop-shadow-[0_8px_10px_rgba(0,0,0,0.6)] animate-bounce-slow">
+                    
+                    <!-- Punta del Segnaposto (Pin) -->
+                    <path d="M 50 125 L 45 90 L 55 90 Z" fill="#d1d5db" />
+                    
+                    <!-- Base arrotondata del Pin -->
+                    <path d="M 50 100 C 75 100, 85 70, 85 50 C 85 25, 75 10, 50 10 C 25 10, 15 25, 15 50 C 15 70, 25 100, 50 100 Z" fill="#21cf8d" stroke="#fff" stroke-width="3" />
+                    
+                    <!-- Viso del Bambino -->
+                    <circle cx="50" cy="50" r="28" fill="#ffcdb2" />
+                    
+                    <!-- Ciuffo Ribelle da Scienziato (Azzurro scuro) -->
+                    <path d="M 22 45 C 20 20, 40 15, 50 15 C 60 15, 80 20, 78 45 C 75 30, 60 25, 50 25 C 40 25, 25 30, 22 45 Z" fill="#1a0b2e" />
+                    <path d="M 40 18 Q 50 -5 60 18" fill="#1a0b2e" />
+                    
+                    <!-- Occhiali Protettivi da Laboratorio (Grandi e tondi) -->
+                    <circle cx="38" cy="52" r="10" fill="rgba(14, 165, 233, 0.4)" stroke="#0EA5E9" stroke-width="3" />
+                    <circle cx="62" cy="52" r="10" fill="rgba(14, 165, 233, 0.4)" stroke="#0EA5E9" stroke-width="3" />
+                    <line x1="48" y1="52" x2="52" y2="52" stroke="#0EA5E9" stroke-width="3" />
+                    
+                    <!-- Occhietti -->
+                    <circle cx="38" cy="52" r="3" fill="#1a0b2e" />
+                    <circle cx="62" cy="52" r="3" fill="#1a0b2e" />
+                    
+                    <!-- Sorriso deciso -->
+                    <path d="M 42 68 Q 50 75 58 68" fill="none" stroke="#1a0b2e" stroke-width="2.5" stroke-linecap="round" />
+                    
+                    <!-- Riflesso di luce sul vetro del Pin -->
+                    <path d="M 22 40 A 30 30 0 0 1 45 15" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+                </svg>
+            </div>
+
+            <div id="monsters-container" class="relative z-10 flex flex-col w-full gap-[15vh]"></div>
+        </div>
+    </div>
+
+    <!-- QUESTION MODAL (Avatar Centrato nel box + Tasto X) -->
+    <div id="question-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 md:p-8 bg-enchanted-bg/90 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="glass-panel rounded-[2rem] p-8 md:p-14 w-full max-w-5xl relative transform scale-95 transition-transform duration-300 shadow-[0_0_60px_rgba(33,207,141,0.25)] flex flex-col items-center">
+            
+            <!-- Tasto X per chiudere -->
+            <button onclick="closeModalOnly()" class="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors border border-white/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            
+            <!-- Avatar Mostro INTERNO e CENTRATO -->
+            <div id="modal-monster-avatar" class="w-32 h-32 md:w-40 md:h-40 animate-bounce-slow mb-6"></div>
+
+            <div class="text-center w-full">
+                <div class="text-sm md:text-base font-bold text-slate-400 mb-2 tracking-widest uppercase">Livello <span id="modal-level-text">1</span></div>
+                <h3 id="monster-name" class="font-magic text-3xl md:text-4xl text-enchanted-magic mb-6 uppercase tracking-wider">Nome Mostro</h3>
+                <p id="question-text" class="text-2xl md:text-4xl font-bold mb-12 text-white leading-tight font-body">Caricamento indovinello...</p>
+                <div id="answers-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"></div>
+            </div>
+
+            <div id="error-msg" class="absolute -bottom-10 left-1/2 transform -translate-x-1/2 text-center opacity-0 transition-opacity pointer-events-none whitespace-nowrap">
+                <span class="bg-red-500 text-white font-bold px-8 py-3 rounded-full shadow-xl border-2 border-red-300 animate-pulse text-lg md:text-xl inline-block">
+                    Oh no! Risposta errata. Riprova!
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="screen-win" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-enchanted-bg/95 backdrop-blur-md opacity-0 transition-opacity duration-1000">
+        <div class="text-center relative">
+            <div class="absolute inset-0 bg-[radial-gradient(circle,rgba(33,207,141,0.4)_0%,transparent_70%)] animate-pulse-glow z-0"></div>
+            <div class="relative z-10">
+                <svg class="w-48 h-48 mx-auto mb-6 drop-shadow-[0_0_30px_#21cf8d] animate-float" viewBox="0 0 24 24" fill="none" stroke="#21cf8d" stroke-width="1.5">
+                    <path d="M9 3h6v4l4 10v4H5v-4l4-10V3z" fill="rgba(33,207,141,0.2)"/>
+                    <path d="M5 17h14M9 7h6" stroke-linecap="round"/>
+                    <circle cx="12" cy="14" r="1.5" fill="#fff" stroke="none"/><circle cx="10" cy="17" r="1" fill="#fff" stroke="none"/><circle cx="14" cy="18" r="1.5" fill="#fff" stroke="none"/>
+                </svg>
+                <h1 class="font-magic text-5xl md:text-7xl mb-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-fuchsia-500 to-orange-400 drop-shadow-lg">Vittoria Epica!</h1>
+                <p class="text-xl md:text-2xl text-blue-100 mb-10 font-bold max-w-2xl mx-auto">Hai dimostrato di essere un vero ricercatore completando il sentiero!</p>
+                <button onclick="location.reload()" class="magic-btn font-magic text-2xl text-white px-10 py-4 rounded-2xl">Torna al Prologo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DEL GIOCO -->
+    <script>
+        const svgs = {
+            coccus: (c) => `<circle cx="50" cy="50" r="40" fill="${c}"/><rect x="25" y="30" width="50" height="20" rx="10" fill="#fff"/><circle cx="35" cy="40" r="3" fill="#000"/><circle cx="65" cy="40" r="3" fill="#000"/><path d="M 40 70 Q 50 60 60 70" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/>`,
+            bacillus: (c) => `<rect x="20" y="10" width="60" height="80" rx="30" fill="${c}"/><circle cx="40" cy="35" r="5" fill="#fff"/><circle cx="60" cy="35" r="5" fill="#fff"/><circle cx="40" cy="35" r="2" fill="#000"/><circle cx="60" cy="35" r="2" fill="#000"/><path d="M 40 70 L 60 70" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`,
+            spirillum: (c) => `<path d="M 50 10 Q 80 25 50 50 T 50 90" stroke="${c}" stroke-width="30" stroke-linecap="round" fill="none"/><circle cx="45" cy="30" r="4" fill="#fff"/><circle cx="65" cy="30" r="4" fill="#fff"/><circle cx="45" cy="30" r="1.5" fill="#000"/><circle cx="65" cy="30" r="1.5" fill="#000"/>`,
+            armored: (c) => `<rect x="20" y="20" width="60" height="60" rx="15" fill="${c}"/><path d="M 30 10 L 70 10 L 50 30 Z" fill="#fff" opacity="0.5"/><circle cx="35" cy="45" r="4" fill="#fff"/><circle cx="65" cy="45" r="4" fill="#fff"/><circle cx="35" cy="45" r="1.5" fill="#000"/><circle cx="65" cy="45" r="1.5" fill="#000"/><path d="M 45 65 L 55 65" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`,
+            virus: (c) => `<polygon points="50,10 75,35 65,75 35,75 25,35" fill="${c}"/><circle cx="40" cy="45" r="4" fill="#fff"/><circle cx="60" cy="45" r="4" fill="#fff"/><circle cx="40" cy="45" r="1.5" fill="#000"/><circle cx="60" cy="45" r="1.5" fill="#000"/><line x1="50" y1="10" x2="50" y2="-10" stroke="${c}" stroke-width="4"/><line x1="75" y1="35" x2="90" y2="30" stroke="${c}" stroke-width="4"/><line x1="25" y1="35" x2="10" y2="30" stroke="${c}" stroke-width="4"/>`
+        };
+
+        const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#9d4edd', '#ff006e', '#fca311', '#00b4d8', '#7209b7', '#ff0054', '#38b000'];
+
+        // 20 Nomi Accattivanti ed Esclusivi per i mostriciattoli
+        const fullGameData = [
+            { name: 'Storico-Puff', shape: 'coccus', colorIdx: 0, question: "Chi ha scoperto per caso il primo antibiotico?", options: ["Cristoforo Colombo", "Alexander Fleming", "Galileo Galilei", "Albert Einstein"], correct: 1 },
+            { name: 'Natura-Rex', shape: 'bacillus', colorIdx: 1, question: "Qual è il nome del primissimo 'antibiotico naturale' scoperto da Fleming?", options: ["Aspirina", "Paracetamolo", "Penicillina", "Vitamina C"], correct: 2 },
+            { name: 'Assedio-Spir', shape: 'spirillum', colorIdx: 2, question: "Come agisce la Penicillina nei confronti dei batteri?", options: ["Distrugge la parete cellulare (le mura del castello)", "Li fa addormentare", "Dà loro dello zucchero", "Manda un virus a mangiarli"], correct: 0 },
+            { name: 'Macrolindo Synth', shape: 'armored', colorIdx: 3, question: "Come si chiamano gli antibiotici interamente creati dagli scienziati in laboratorio?", options: ["Antibiotici Alieni", "Antibiotici Magici", "Antibiotici Sintetici", "Antibiotici Finti"], correct: 2 },
+            { name: 'Infiltra-Cocco', shape: 'coccus', colorIdx: 4, question: "Qual è uno dei meccanismi utilizzati dagli antibiotici sintetici una volta entrati nel batterio per inattivarlo?", options: ["Bruciano la cellula", "Bloccano la sintesi proteica", "Colorano il batterio di blu", "Accendono la luce"], correct: 1 },
+            { name: 'Mutantex', shape: 'bacillus', colorIdx: 5, question: "Come si chiama la magia oscura per cui i batteri diventano immuni alle nostre medicine?", options: ["Magia Bianca", "Antibiotico-resistenza", "Scudo di Ferro", "Invisibilità Batterica"], correct: 1 },
+            { name: 'Darwin-Spiro', shape: 'spirillum', colorIdx: 6, question: "Quali processi naturali mettono in atto i batteri per difendersi dagli antibiotici?", options: ["Lettura e scrittura", "Sport e diete", "Magia e stregoneria", "Mutazioni genetiche e selezione naturale"], correct: 3 },
+            { name: 'Efflusso-Bot', shape: 'armored', colorIdx: 7, question: "Quale trucchetto usano alcuni batteri per 'sputare' fuori l'antibiotico prima che faccia loro male?", options: ["Costruiscono pompe di efflusso", "Usano un ombrello", "Indossano una mascherina", "Starnutiscono fortissimo"], correct: 0 },
+            { name: 'Beta-Distruttor', shape: 'coccus', colorIdx: 8, question: "I batteri resistenti possono usare enzimi chiamati Beta-lattamasi. A cosa servono?", options: ["A distruggere la struttura chimica dell'antibiotico", "A far crescere i capelli", "A creare nuove proteine", "A digerire lo zucchero"], correct: 0 },
+            { name: 'Plasmido-Post', shape: 'bacillus', colorIdx: 9, question: "I batteri si scambiano 'pacchetti segreti di DNA' con i super-poteri della resistenza. Come si chiamano?", options: ["Lettere magiche", "Plasmidi", "Zaini", "Batterio-mail"], correct: 1 },
+            { name: 'Colpa-Cocco', shape: 'spirillum', colorIdx: 0, question: "Di chi è principalmente la colpa se l'antibiotico-resistenza è diventata un'emergenza mondiale?", options: ["Degli alieni", "Dell'inquinamento dell'aria", "Dell'abuso e dell'uso scorretto degli antibiotici", "Del cambiamento climatico"], correct: 2 },
+            { name: 'Muu-Bact', shape: 'armored', colorIdx: 1, question: "Oltre che dalle persone, dove vengono usati grandissime quantità di antibiotici in modo scorretto?", options: ["Nelle scuole", "Negli allevamenti intensivi di animali", "Nei parchi giochi", "Nelle piscine pubbliche"], correct: 1 },
+            { name: 'Falso-Allarme', shape: 'virus', colorIdx: 2, question: "Regola 1! È giusto prendere l'antibiotico per curare il virus del raffreddore?", options: ["No, gli antibiotici funzionano solo contro i batteri", "Sì, se ha un buon sapore", "Sì, mezza dose", "Certo, uccide tutto"], correct: 0 },
+            { name: 'Doc-Cocco', shape: 'coccus', colorIdx: 3, question: "Regola 2! Cosa devi fare prima di prendere un antibiotico avanzato dalla scatola dell'anno scorso?", options: ["Mangiarlo subito", "Chiedere sempre al medico", "Darlo al gatto", "Scioglierlo in acqua calda"], correct: 1 },
+            { name: 'Resisto-Max', shape: 'bacillus', colorIdx: 4, question: "Regola 3! Perché NON devi smettere di prendere l'antibiotico appena ti senti meglio?", options: ["Perché i batteri più resistenti non sono ancora morti e diventeranno più forti", "Perché la medicina scade", "Perché fa male alla pancia", "Perché bisogna finire la scatola per non sprecare plastica"], correct: 0 },
+            { name: 'Super-Wash', shape: 'spirillum', colorIdx: 5, question: "Regola 4! Qual è l'abitudine igienica più semplice ed efficace in assoluto per fermare i batteri?", options: ["Lavarsi sempre bene le mani", "Non uscire mai di casa", "Indossare i guanti 24 ore su 24", "Fare il bagno nel succo di limone"], correct: 0 },
+            { name: 'Micro-Ninja', shape: 'armored', colorIdx: 6, question: "Possiamo vedere i batteri ad occhio nudo quando passeggiamo nel bosco?", options: ["Sì, se guardiamo bene", "No, sono creature minuscole invisibili agli occhi", "Sì, ma solo di notte", "Sì, sono grandi come formiche"], correct: 1 },
+            { name: 'Amico-Nemico', shape: 'coccus', colorIdx: 7, question: "Tutti i batteri del mondo sono cattivi e vogliono farci ammalare?", options: ["Sì, sono tutti mostri", "No, molti sono preziosi amici e ci aiutano a digerire", "Sì, e vengono dallo spazio", "Solo quelli colorati di verde"], correct: 1 },
+            { name: 'Scudo-Spina', shape: 'bacillus', colorIdx: 8, question: "Perché gli antibiotici non funzionano contro i virus?", options: ["Perché i virus hanno lo scudo", "Perché i virus volano via", "Perché i virus non sono cellule vive", "Perché i virus sono troppo grandi"], correct: 2 },
+            { name: 'Guardiano d\'Oro', shape: 'armored', colorIdx: 9, question: "Cosa stiamo cercando di proteggere seguendo le 4 Regole d'Oro?", options: ["Il Micro-Regno e l'efficacia dei farmaci", "I castelli di sabbia", "Le ricette segrete", "I batteri cattivi"], correct: 0 }
+        ];
+
+        let activeGameData = [];
+        let currentLevel = 0;
+
+        function goToDifficultySelection() {
+            document.getElementById('screen-story').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('screen-story').classList.add('hidden');
+                
+                const startScreen = document.getElementById('screen-start');
+                startScreen.classList.remove('hidden');
+                startScreen.classList.add('flex');
+                
+                setTimeout(() => {
+                    startScreen.style.opacity = '1';
+                    document.getElementById('start-panel').style.transform = 'scale(1)';
+                }, 50);
+            }, 500);
+        }
+
+        function startGame(numLevels) {
+            activeGameData = fullGameData.slice(0, numLevels);
+            currentLevel = 0;
+            
+            document.getElementById('screen-start').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('screen-start').classList.add('hidden');
+                document.getElementById('screen-start').classList.remove('flex');
+                
+                document.getElementById('screen-map').classList.remove('hidden');
+                document.getElementById('score-display').innerText = `0/${activeGameData.length}`;
+                
+                buildMonstersHTML();
+                
+                setTimeout(() => {
+                    document.getElementById('screen-map').style.opacity = '1';
+                    drawDynamicPathAndPlacePawn();
+                    window.scrollTo(0, 0);
+                }, 100);
+
+            }, 500);
+        }
+
+        function buildMonstersHTML() {
+            const container = document.getElementById('monsters-container');
+            container.innerHTML = '';
+            
+            activeGameData.forEach((monster, index) => {
+                const isLeft = index % 2 === 0;
+                const alignClass = isLeft ? 'self-start ml-[10%] md:ml-[25%]' : 'self-end mr-[10%] md:mr-[25%]';
+                const isLocked = index > 0 ? 'monster-locked' : 'animate-pulse-glow cursor-pointer hover:scale-110';
+                const colorHex = colors[monster.colorIdx];
+                const svgMarkup = svgs[monster.shape](colorHex);
+
+                const div = document.createElement('div');
+                div.id = `node-${index}`;
+                div.className = `monster-node w-32 h-32 md:w-48 md:h-48 relative group transition-all duration-500 z-20 ${alignClass} ${isLocked}`;
+                div.onclick = () => { if (index === currentLevel) openQuestion(index); };
+                
+                div.innerHTML = `
+                    <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-white/50 font-bold text-sm md:text-base bg-black/30 px-4 py-1 rounded-full border border-white/10 whitespace-nowrap">Domanda ${index + 1}</div>
+                    <div id="monster-svg-${index}" class="w-full h-full animate-float" style="animation-delay: ${index * 0.15}s">
+                        <svg viewBox="-10 -10 120 120" width="100%" height="100%" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));">
+                            ${svgMarkup}
+                        </svg>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+          const finishDiv = document.createElement('div');
+            finishDiv.id = 'finish-line-node';
+            finishDiv.className = 'w-40 h-40 md:w-56 md:h-56 relative self-center mt-10 z-20 opacity-50 transition-opacity duration-1000';
+            finishDiv.innerHTML = `
+                <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_25px_rgba(33,207,141,0.8)] animate-float">
+                    <!-- Piedistallo/Aura magica sotto l'ampolla -->
+                    <ellipse cx="50" cy="85" rx="35" ry="10" fill="rgba(33, 207, 141, 0.2)" class="animate-pulse" />
+                    
+                    <!-- Vetro Ampolla - Sfondo -->
+                    <path d="M 40 20 L 60 20 L 60 35 C 75 45, 80 60, 75 75 C 70 90, 30 90, 25 75 C 20 60, 25 45, 40 35 Z" fill="rgba(255,255,255,0.1)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+                    
+                    <!-- Liquido Magico (La Cura) -->
+                    <path d="M 28 60 C 40 55, 60 65, 72 60 C 76 70, 68 86, 50 86 C 32 86, 24 70, 28 60 Z" fill="url(#potion-grad)" />
+                    
+                    <!-- Bolle nel liquido (animate via CSS) -->
+                    <circle cx="45" cy="75" r="3" fill="#fff" opacity="0.6" class="animate-bounce-slow" />
+                    <circle cx="58" cy="68" r="2" fill="#fff" opacity="0.8" class="animate-bounce-slow" style="animation-delay: 0.5s;" />
+                    <circle cx="35" cy="65" r="1.5" fill="#fff" opacity="0.5" class="animate-bounce-slow" style="animation-delay: 1s;" />
+
+                    <!-- Riflesso del vetro (Luce a sinistra) -->
+                    <path d="M 32 50 C 27 60, 28 75, 38 82" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity="0.4" />
+                    
+                    <!-- Tappo in sughero -->
+                    <path d="M 42 10 L 58 10 L 56 20 L 44 20 Z" fill="#b07d54" />
+                    <!-- Laccetto rosso attorno al collo -->
+                    <rect x="38" y="20" width="24" height="4" rx="2" fill="#d81159" />
+
+                    <!-- Scintilla di magia in alto a destra -->
+                    <path d="M 75 25 L 80 30 L 85 25 L 80 20 Z" fill="#ffe66d" class="animate-pulse" />
+                    <path d="M 85 35 L 88 38 L 91 35 L 88 32 Z" fill="#fff" class="animate-pulse" style="animation-delay: 0.3s;" />
+
+                    <!-- Gradiente per il liquido -->
+                    <defs>
+                        <linearGradient id="potion-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#0EA5E9" />
+                            <stop offset="100%" stop-color="#21cf8d" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-enchanted-path font-magic text-2xl md:text-3xl whitespace-nowrap drop-shadow-[0_0_10px_rgba(33,207,141,0.8)]">LA CURA!</div>
+            `;
+            container.appendChild(finishDiv);
+        }
+
+        function drawDynamicPathAndPlacePawn() {
+            const container = document.getElementById('game-area');
+            const svgLayer = document.getElementById('svg-layer');
+            const pathGlow = document.getElementById('dynamic-path-glow');
+            const pathMain = document.getElementById('dynamic-path');
+            
+            svgLayer.style.height = container.scrollHeight + 'px';
+            
+            const nodes = document.querySelectorAll('.monster-node');
+            const finishNode = document.getElementById('finish-line-node');
+            
+            let points = [];
+            nodes.forEach(node => {
+                points.push({ x: node.offsetLeft + node.offsetWidth / 2, y: node.offsetTop + node.offsetHeight / 2 });
+            });
+            points.push({ x: finishNode.offsetLeft + finishNode.offsetWidth / 2, y: finishNode.offsetTop + finishNode.offsetHeight / 2 });
+
+            if (points.length > 0) {
+                let d = `M ${points[0].x},${points[0].y} `;
+                for(let i = 1; i < points.length; i++) {
+                    let pPrev = points[i-1];
+                    let pCurr = points[i];
+                    let cpY = pPrev.y + (pCurr.y - pPrev.y) / 2;
+                    d += `C ${pPrev.x},${cpY} ${pCurr.x},${cpY} ${pCurr.x},${pCurr.y} `;
+                }
+                pathGlow.setAttribute('d', d);
+                pathMain.setAttribute('d', d);
+            }
+
+            const pawn = document.getElementById('player-pawn');
+            pawn.classList.remove('hidden');
+            movePawnTo(0);
+        }
+
+        window.addEventListener('resize', () => {
+            if(!document.getElementById('screen-map').classList.contains('hidden')) {
+                drawDynamicPathAndPlacePawn();
+                movePawnTo(currentLevel);
+            }
+        });
+
+        function movePawnTo(index) {
+            const pawn = document.getElementById('player-pawn');
+            let targetNode = index < activeGameData.length ? document.getElementById(`node-${index}`) : document.getElementById('finish-line-node');
+            
+            if(targetNode) {
+                pawn.style.left = (targetNode.offsetLeft + targetNode.offsetWidth / 2) + 'px';
+                pawn.style.top = (targetNode.offsetTop + targetNode.offsetHeight / 2) + 'px';
+            }
+        }
+
+        // --- MODALE DOMANDE ---
+        const modal = document.getElementById('question-modal');
+        const modalContent = modal.querySelector('.glass-panel');
+
+        function openQuestion(index) {
+            const monster = activeGameData[index];
+            const colorHex = colors[monster.colorIdx];
+            
+            document.getElementById('modal-level-text').innerText = index + 1;
+            document.getElementById('monster-name').innerText = monster.name;
+            document.getElementById('question-text').innerText = monster.question;
+            
+            document.getElementById('modal-monster-avatar').innerHTML = `
+                <svg viewBox="-10 -10 120 120" width="100%" height="100%" style="filter: drop-shadow(0 0 20px ${colorHex});">
+                    ${svgs[monster.shape](colorHex)}
+                </svg>`;
+
+            const answersContainer = document.getElementById('answers-container');
+            answersContainer.innerHTML = '';
+            
+            monster.options.forEach((optText, optIndex) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option bg-white/5 border border-white/20 rounded-2xl p-4 md:p-6 text-left text-white font-bold text-lg md:text-xl relative overflow-hidden group';
+                btn.innerHTML = `
+                    <span class="relative z-10">${optText}</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-enchanted-path to-enchanted-glow opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                `;
+                btn.onclick = () => checkAnswer(optIndex, monster.correct, btn);
+                answersContainer.appendChild(btn);
+            });
+
+            document.body.style.overflow = 'hidden';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('error-msg').style.opacity = '0';
+            
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modalContent.style.transform = 'scale(1)';
+            }, 10);
+        }
+
+        // FUNZIONE PER CHIUDERE IL MODALE CON LA X (senza sconfiggere il mostro)
+        function closeModalOnly() {
+            modal.style.opacity = '0';
+            modalContent.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        function checkAnswer(selectedIndex, correctIndex, btnElement) {
+            if (selectedIndex === correctIndex) {
+                btnElement.classList.add('bg-enchanted-path', 'border-white');
+                setTimeout(() => closeModalAndDefeatMonster(), 600);
+            } else {
+                btnElement.classList.add('bg-red-500/50', 'border-red-500');
+                modalContent.classList.add('animate-shake');
+                document.getElementById('error-msg').style.opacity = '1';
+
+                setTimeout(() => {
+                    modalContent.classList.remove('animate-shake');
+                    btnElement.classList.remove('bg-red-500/50', 'border-red-500');
+                }, 500);
+                setTimeout(() => {
+                     document.getElementById('error-msg').style.opacity = '0';
+                }, 2000);
+            }
+        }
+
+        function closeModalAndDefeatMonster() {
+            modal.style.opacity = '0';
+            modalContent.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+                
+                const nodeEl = document.getElementById(`node-${currentLevel}`);
+                const svgContainer = document.getElementById(`monster-svg-${currentLevel}`);
+                
+                nodeEl.classList.remove('animate-pulse-glow', 'hover:scale-110', 'cursor-pointer');
+                svgContainer.classList.remove('animate-float');
+                svgContainer.classList.add('animate-spin-shrink');
+                
+                createSparkles(nodeEl);
+
+                setTimeout(() => {
+                    svgContainer.style.visibility = 'hidden';
+                    advanceLevel();
+                }, 800); 
+                
+            }, 300);
+        }
+
+        function createSparkles(parentEl) {
+            const colors = ['#21cf8d', '#d81159', '#0EA5E9', '#ffe66d'];
+            for(let i=0; i<12; i++) {
+                const sp = document.createElement('div');
+                sp.className = 'sparkle absolute left-1/2 top-1/2';
+                sp.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const angle = (i / 12) * Math.PI * 2;
+                const distance = 60 + Math.random() * 60;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                sp.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                parentEl.appendChild(sp);
+                
+                setTimeout(() => {
+                    sp.style.opacity = '1';
+                    sp.style.transform = `translate(-50%, -50%) translate(${tx}px, ${ty}px) scale(0)`;
+                }, 10);
+            }
+        }
+
+        function advanceLevel() {
+            currentLevel++;
+            document.getElementById('score-display').innerText = `${currentLevel}/${activeGameData.length}`;
+            
+            movePawnTo(currentLevel);
+
+            if (currentLevel >= activeGameData.length) {
+                document.getElementById('finish-line-node').style.opacity = '1';
+                setTimeout(showWinScreen, 1200); 
+            } else {
+                const nextNode = document.getElementById(`node-${currentLevel}`);
+                nextNode.classList.remove('monster-locked');
+                nextNode.classList.add('animate-pulse-glow', 'cursor-pointer', 'hover:scale-110');
+                
+                setTimeout(() => {
+                    nextNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 400);
+            }
+        }
+
+        function showWinScreen() {
+            document.body.style.overflow = 'hidden';
+            document.getElementById('screen-map').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('screen-map').classList.add('hidden');
+                
+                const winScreen = document.getElementById('screen-win');
+                winScreen.classList.remove('hidden');
+                winScreen.classList.add('flex');
+                
+                for(let i=0; i<50; i++) createConfetti(winScreen);
+                
+                setTimeout(() => winScreen.style.opacity = '1', 100);
+            }, 500);
+        }
+
+        function createConfetti(container) {
+            const colors = ['#21cf8d', '#d81159', '#0EA5E9', '#ffe66d', '#fff'];
+            const conf = document.createElement('div');
+            conf.style.position = 'absolute';
+            conf.style.width = '12px';
+            conf.style.height = '12px';
+            conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            conf.style.borderRadius = Math.random() > 0.5 ? '50%' : '0%';
+            
+            conf.style.left = Math.random() * 100 + 'vw';
+            conf.style.top = '-20px';
+            conf.style.zIndex = '0';
+            
+            const duration = 2500 + Math.random() * 3000;
+            conf.animate([
+                { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
+                { transform: `translate3d(${Math.random()*400 - 200}px, 100vh, 0) rotate(${720 + Math.random()*360}deg)`, opacity: 0 }
+            ], { duration: duration, easing: 'linear', iterations: Infinity });
+            
+            container.appendChild(conf);
+        }
+    </script>
+</body>
+</html>

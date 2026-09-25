@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMALCULES - Lab Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#0EA5E9',
+                            green: '#10B981',
+                            dark: '#0B1120',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'blob': 'blob 10s infinite',
+                        'shake': 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-2px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(4px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-6px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(6px, 0, 0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0B1120;
+            color: #F8FAFC;
+        }
+        
+        .glass-panel {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(to right, #0EA5E9, #10B981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .option-correct {
+            background: rgba(16, 185, 129, 0.2) !important;
+            border-color: #10B981 !important;
+            color: #10B981 !important;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        .option-wrong {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #EF4444 !important;
+            color: #EF4444 !important;
+        }
+        .option-missed {
+            background: rgba(245, 158, 11, 0.2) !important;
+            border-color: #F59E0B !important;
+            color: #F59E0B !important;
+        }
+
+        .screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Scrollbar custom per il testo lungo */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.5); border-radius: 4px; }
+
+        /* Timer Bar */
+        .timer-bar { transition: width 1s linear, background-color 0.3s ease; }
+    </style>
+</head>
+<body class="antialiased h-screen w-screen relative overflow-hidden flex items-center justify-center">
+
+    <!-- Animated Background -->
+    <div class="fixed inset-0 w-full h-full z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[10%] left-[10%] w-[30rem] h-[30rem] bg-brand-blue/10 rounded-full filter blur-[100px] animate-blob"></div>
+        <div class="absolute bottom-[10%] right-[10%] w-[35rem] h-[35rem] bg-brand-green/10 rounded-full filter blur-[100px] animate-blob" style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- SCREEN 1: STUDY TEXT (Read phase) -->
+    <div id="study-screen" class="screen active flex-col w-full max-w-5xl h-[90vh] p-4 md:p-8 z-10 animate-fade-in">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl md:text-5xl font-black text-white">Lab <span class="text-brand-green">Challenge</span></h1>
+            <div class="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold tracking-widest uppercase">Fase 1: Studio</div>
+        </div>
+        
+        <div class="glass-panel rounded-3xl flex-1 overflow-hidden flex flex-col">
+            <div class="p-6 md:p-8 border-b border-white/10 flex-shrink-0">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Un po' di studio</h2>
+                <p class="text-slate-400">Leggi attentamente il seguente testo. Tutte le domande della sfida si baseranno esclusivamente su queste informazioni.</p>
+            </div>
+            
+            <div class="p-6 md:p-10 overflow-y-auto custom-scrollbar flex-1 space-y-8 text-slate-300 leading-relaxed text-lg">
+                <!-- Paragrafo 1: Storia -->
+                <div>
+                    <h3 class="text-xl font-bold text-brand-blue mb-3">1. Breve Storia: L'Alba dell'Era Antibiotica</h3>
+                    <p>La storia degli antibiotici inizia formalmente nel 1928, quando il medico scozzese Alexander Fleming, tornando dalle vacanze, notò che una muffa (Penicillium notatum) aveva contaminato una capsula di Petri, distruggendo le colonie del batterio Staphylococcus aureus attorno ad essa. Aveva appena scoperto la <strong>Penicillina</strong>. Tuttavia, la produzione di massa e l'utilizzo clinico su larga scala avvennero solo durante la Seconda Guerra Mondiale (anni '40), grazie al lavoro di Florey e Chain. Questo diede inizio alla cosiddetta "Età dell'Oro degli antibiotici" (1950-1970), decenni in cui vennero scoperte quasi tutte le classi di antibiotici oggi note, trasformando infezioni un tempo letali (come polmoniti e tubercolosi) in malattie curabili.</p>
+                </div>
+
+                <!-- Paragrafo 2: Origine -->
+                <div>
+                    <h3 class="text-xl font-bold text-brand-green mb-3">2. Antibiotici: Naturali, Sintetici e Semi-sintetici</h3>
+                    <p>Originariamente, un antibiotico era definito come una sostanza prodotta da un microrganismo capace di uccidere o inibire altri microrganismi (<strong>Antibiotici Naturali</strong>). Un esempio classico è la penicillina (da un fungo) o la streptomicina (prodotta dal batterio Streptomyces). Col tempo, i chimici hanno imparato a modificare in laboratorio le molecole naturali per renderle più efficaci, resistenti all'acidità dello stomaco o meno tossiche: questi sono gli <strong>Antibiotici Semi-sintetici</strong> (es. l'Amoxicillina). Infine, esistono molecole interamente create in laboratorio che non esistono in natura, note come <strong>Antibiotici Sintetici</strong>, tra cui spiccano i Chinoloni e i Sulfamidici.</p>
+                </div>
+
+                <!-- Paragrafo 3: Funzionamento -->
+                <div>
+                    <h3 class="text-xl font-bold text-brand-blue mb-3">3. Il Meccanismo d'Azione: Batteriostatici vs Battericidi</h3>
+                    <p>Gli antibiotici non funzionano tutti allo stesso modo e si dividono in due grandi categorie in base all'effetto che hanno sulla cellula batterica:</p>
+                    <ul class="list-disc pl-6 mt-3 space-y-3">
+                        <li><strong>Antibiotici Batteriostatici:</strong> Queste molecole non uccidono direttamente il batterio, ma ne bloccano la crescita e la moltiplicazione. Spesso agiscono inibendo la sintesi delle proteine batteriche. Bloccando la replicazione, "congelano" l'infezione, dando il tempo al sistema immunitario del paziente di intervenire e distruggere i batteri rimasti. Esempi classici di batteriostatici sono le <em>Tetracicline</em> e i <em>Macrolidi</em>.</li>
+                        <li><strong>Antibiotici Battericidi:</strong> Queste molecole uccidono fisicamente il batterio, provocandone la distruzione (lisi cellulare). Spesso agiscono distruggendo la parete cellulare batterica (una struttura essenziale che le cellule umane non possiedono) o danneggiando irreparabilmente il DNA. Sono preferiti in infezioni gravi o in pazienti immunodepressi (il cui sistema immunitario non riuscirebbe a eliminare i batteri da solo). Esempi di battericidi sono le <em>Penicilline</em> e gli <em>Aminoglicosidi</em>.</li>
+                    </ul>
+                    <p class="mt-3 text-sm text-slate-400">Nota: Tutti gli antibiotici (siano essi batteriostatici o battericidi) sono totalmente inefficaci contro i virus (come l'influenza o il raffreddore).</p>
+                </div>
+
+                <!-- Paragrafo 4: Regole contro AMR -->
+                <div class="bg-brand-blue/5 p-6 rounded-2xl border border-brand-blue/20">
+                    <h3 class="text-xl font-bold text-red-400 mb-3">4. Combattere l'Antibiotico-Resistenza (AMR)</h3>
+                    <p class="mb-4">L'antibiotico-resistenza si verifica quando i batteri mutano o acquisiscono geni che li rendono invulnerabili ai farmaci. Questo processo evolutivo naturale è stato drammaticamente accelerato dall'uso scorretto umano. Per preservare l'efficacia di questi farmaci salvavita, è fondamentale rispettare le seguenti norme di comportamento:</p>
+                    <ol class="list-decimal pl-6 space-y-2 text-slate-200">
+                        <li><strong>Mai auto-prescriversi antibiotici:</strong> Assumere antibiotici avanzati da terapie precedenti o prenderli per un banale raffreddore (causato da virus) espone inutilmente i nostri batteri "buoni" (microbioma) al farmaco, selezionando ceppi resistenti.</li>
+                        <li><strong>Rispettare dosi e durata:</strong> Se il medico prescrive 7 giorni di terapia, non bisogna fermarsi al 4° giorno solo perché "ci si sente meglio". Sospendere la terapia in anticipo lascia in vita i batteri più forti, che riprenderanno a moltiplicarsi rendendo la ricaduta più difficile da curare.</li>
+                        <li><strong>Smaltimento corretto:</strong> Non gettare mai gli antibiotici scaduti nel lavandino o nella spazzatura normale. Disperdere antibiotici nell'ambiente (acque reflue o suolo) contamina gli ecosistemi e genera "super-batteri" ambientali. Vanno consegnati nelle apposite cappe delle farmacie.</li>
+                        <li><strong>Igiene preventiva:</strong> Lavarsi frequentemente le mani e rispettare i piani vaccinali riduce il numero di infezioni contratte, diminuendo di conseguenza la necessità di usare antibiotici alla radice.</li>
+                        <li><strong>Allevamenti consapevoli:</strong> Acquistare, quando possibile, prodotti derivanti da filiere che garantiscono un uso prudente degli antibiotici in ambito zootecnico, poiché l'uso massiccio di antibiotici negli allevamenti per favorire la crescita degli animali è una delle principali cause della resistenza globale.</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="p-6 md:p-8 border-t border-white/10 flex-shrink-0 flex justify-end">
+                <button onclick="goToLevelSelection()" class="px-8 py-4 bg-white text-slate-900 rounded-xl font-bold text-lg hover:bg-brand-green hover:text-white transition-colors flex items-center gap-2">
+                    Inizia la sfida
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: LEVEL SELECTION -->
+    <div id="level-screen" class="screen flex-col items-center justify-center w-full max-w-4xl p-6 text-center z-10">
+        <h1 class="text-4xl md:text-5xl font-black mb-12 text-white">Scegli la difficoltà</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+            <!-- Principiante -->
+            <button onclick="startGame(10)" class="glass-panel group p-8 rounded-3xl hover:-translate-y-2 transition-transform text-left relative overflow-hidden">
+                <div class="absolute inset-0 bg-brand-blue/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-brand-blue/20 flex items-center justify-center text-brand-blue mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Tirocinante</h3>
+                    <p class="text-slate-400 mb-4">Un banco di prova per chi ha appena iniziato.</p>
+                    <span class="text-brand-blue font-bold tracking-wider">10 DOMANDE</span>
+                </div>
+            </button>
+
+            <!-- Intermedio -->
+            <button onclick="startGame(15)" class="glass-panel group p-8 rounded-3xl border-brand-green/30 hover:border-brand-green/60 hover:-translate-y-2 transition-all text-left relative overflow-hidden">
+                <div class="absolute inset-0 bg-brand-green/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-brand-green/20 flex items-center justify-center text-brand-green mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Ricercatore</h3>
+                    <p class="text-slate-400 mb-4">La sfida standard per il personale di laboratorio.</p>
+                    <span class="text-brand-green font-bold tracking-wider">15 DOMANDE</span>
+                </div>
+            </button>
+
+            <!-- Esperto -->
+            <button onclick="startGame(20)" class="glass-panel group p-8 rounded-3xl hover:-translate-y-2 transition-transform text-left relative overflow-hidden">
+                <div class="absolute inset-0 bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Primario</h3>
+                    <p class="text-slate-400 mb-4">Il test definitivo. Richiede massima concentrazione.</p>
+                    <span class="text-red-400 font-bold tracking-wider">20 DOMANDE</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: QUIZ -->
+    <div id="quiz-screen" class="screen flex-col w-full max-w-4xl p-4 md:p-8 z-10">
+        
+        <!-- Header & Progress -->
+        <div class="flex justify-between items-end mb-6">
+            <div class="text-white">
+                <div class="text-sm text-slate-400 uppercase tracking-widest mb-1">Domanda</div>
+                <div id="progress-text" class="font-bold text-2xl">1 / 10</div>
+            </div>
+            
+            <!-- Timer Display -->
+            <div class="text-right">
+                <div class="text-sm text-slate-400 uppercase tracking-widest mb-1">Tempo residuo</div>
+                <div id="timer-text" class="font-bold text-3xl text-brand-blue font-mono">30s</div>
+            </div>
+        </div>
+
+        <!-- Timer Bar (visual) -->
+        <div class="w-full h-1.5 bg-slate-800 rounded-full mb-8 overflow-hidden">
+            <div id="timer-bar" class="h-full bg-brand-blue timer-bar" style="width: 100%"></div>
+        </div>
+
+        <!-- Question Container -->
+        <div class="glass-panel rounded-3xl p-6 md:p-10 w-full animate-fade-in relative">
+            <h2 id="question-text" class="text-2xl md:text-3xl font-bold text-white mb-8 leading-tight">
+                Caricamento domanda...
+            </h2>
+
+            <!-- Options Grid -->
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Buttons injected via JS -->
+            </div>
+            
+            <!-- Feedback message -->
+            <div id="feedback-msg" class="h-10 mt-6 flex items-center text-lg font-bold opacity-0 transition-opacity">
+                <!-- Feedback injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 4: END -->
+    <div id="end-screen" class="screen flex-col items-center justify-center w-full max-w-3xl p-6 text-center z-10">
+        <h1 class="text-5xl md:text-6xl font-black mb-2 text-white">
+            Sfida <span class="text-gradient">Completata</span>
+        </h1>
+        <p id="end-message" class="text-xl text-slate-300 mb-8 leading-relaxed font-medium">
+            <!-- Injected via JS -->
+        </p>
+        
+        <div class="glass-panel rounded-2xl p-8 mb-10 w-full grid grid-cols-3 gap-4 divide-x divide-white/10">
+            <div class="text-center">
+                <div class="text-slate-400 text-sm mb-2 uppercase tracking-wider">Domande</div>
+                <div id="stat-total" class="text-4xl font-bold text-white">10</div>
+            </div>
+            <div class="text-center">
+                <div class="text-slate-400 text-sm mb-2 uppercase tracking-wider">Corrette</div>
+                <div id="stat-correct" class="text-4xl font-bold text-brand-green">8</div>
+            </div>
+            <div class="text-center">
+                <div class="text-slate-400 text-sm mb-2 uppercase tracking-wider">Errori</div>
+                <div id="stat-mistakes" class="text-4xl font-bold text-red-400">2</div>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <a href="index.html" class="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white font-semibold hover:bg-white/10 transition-all">
+                Torna al Sito
+            </a>
+            <button onclick="location.reload()" class="px-6 py-3 bg-gradient-to-r from-brand-blue to-brand-green rounded-xl text-white font-bold hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all">
+                Gioca di nuovo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Database of 20 Questions strictly based on the text
+        const allQuestions = [
+            // Storia
+            { q: "Chi scoprì la Penicillina nel 1928?", options: ["Florey", "Chain", "Alexander Fleming", "Pasteur"], correct: 2 },
+            { q: "Quando avvenne la produzione di massa e l'utilizzo clinico su larga scala della penicillina?", options: ["Prima Guerra Mondiale", "Seconda Guerra Mondiale (anni '40)", "Nel 1928", "Anni '70"], correct: 1 },
+            { q: "Quale periodo è noto come 'Età dell'Oro degli antibiotici'?", options: ["1920-1940", "1950-1970", "1980-2000", "2010-Oggi"], correct: 1 },
+            { q: "Quale microrganismo produceva la muffa scoperta da Fleming?", options: ["Staphylococcus aureus", "Streptomyces", "Penicillium notatum", "Escherichia coli"], correct: 2 },
+            
+            // Origine
+            { q: "Come viene definito un antibiotico prodotto da un microrganismo (es. streptomicina)?", options: ["Antibiotico Sintetico", "Antibiotico Naturale", "Antibiotico Semi-sintetico", "Antibiotico Artificiale"], correct: 1 },
+            { q: "Cos'è un antibiotico semi-sintetico (es. Amoxicillina)?", options: ["Un mix tra due antibiotici naturali", "Una molecola naturale modificata in laboratorio", "Una molecola creata al 100% in laboratorio", "Un farmaco omeopatico"], correct: 1 },
+            { q: "I Chinoloni sono un esempio di:", options: ["Antibiotici Naturali", "Antibiotici Semi-sintetici", "Antibiotici Sintetici (creati in laboratorio)", "Vaccini antibatterici"], correct: 2 },
+            
+            // Meccanismo
+            { q: "Qual è l'effetto principale di un antibiotico BATTERIOSTATICO?", options: ["Provoca la lisi (esplosione) della cellula", "Uccide fisicamente il batterio", "Blocca la crescita e la moltiplicazione del batterio", "Altera il DNA del batterio in modo fatale"], correct: 2 },
+            { q: "Chi distrugge definitivamente i batteri durante una terapia con batteriostatici?", options: ["Il sistema immunitario del paziente", "L'antibiotico stesso dopo alcuni giorni", "I virus presenti nel corpo", "Il microbioma intestinale"], correct: 0 },
+            { q: "Le Tetracicline sono un esempio classico di:", options: ["Antibiotico Battericida", "Antibiotico Batteriostatico", "Antivirale", "Vaccino"], correct: 1 },
+            { q: "Come agisce generalmente un antibiotico BATTERICIDA?", options: ["Congela la cellula e la addormenta", "Riduce la velocità di crescita batterica", "Distrugge la parete cellulare batterica", "Nutre i globuli bianchi"], correct: 2 },
+            { q: "Le Penicilline, che uccidono fisicamente il batterio, appartengono alla classe dei:", options: ["Battericidi", "Batteriostatici", "Sintetici totali", "Antinfiammatori"], correct: 0 },
+            { q: "Perché gli antibiotici battericidi sono preferiti in pazienti immunodepressi?", options: ["Perché costano meno", "Perché non causano allergie", "Perché il loro sistema immunitario non riuscirebbe a eliminare i batteri da solo", "Perché agiscono anche sui virus"], correct: 2 },
+            { q: "Gli antibiotici (sia batteriostatici che battericidi) sono efficaci contro il raffreddore?", options: ["Sì, sempre", "Solo se assunti nei primi 2 giorni", "No, sono totalmente inefficaci contro i virus", "Solo gli antibiotici sintetici funzionano"], correct: 2 },
+            
+            // Resistenza e Regole
+            { q: "Cosa succede se si assumono antibiotici per un'infezione virale (es. influenza)?", options: ["Si guarisce più velocemente", "Si prevengono future malattie", "Non succede nulla", "Si espongono i batteri buoni al farmaco, selezionando ceppi resistenti"], correct: 3 },
+            { q: "Perché NON bisogna sospendere la terapia prima dei giorni prescritti dal medico?", options: ["Perché il farmaco scade nel sangue", "Perché lascia in vita i batteri più forti, causando ricadute difficili da curare", "Perché è illegale", "Perché l'infezione si trasforma in virus"], correct: 1 },
+            { q: "Come vanno smaltiti gli antibiotici scaduti o avanzati?", options: ["Gettandoli nel lavandino", "Nella spazzatura indifferenziata", "Nelle apposite cappe delle farmacie", "Sotterrandoli nel terreno"], correct: 2 },
+            { q: "Qual è la conseguenza della dispersione di antibiotici nell'ambiente (acque/suolo)?", options: ["Purifica le falde acquifere", "Contamina l'ecosistema e genera super-batteri ambientali", "Concima il terreno", "Uccide le zanzare portatrici di virus"], correct: 1 },
+            { q: "Oltre all'uso umano, quale altro settore è responsabile della resistenza globale per l'uso massiccio di antibiotici per favorire la crescita?", options: ["L'agricoltura per i pesticidi", "L'industria cosmetica", "L'allevamento zootecnico", "L'industria alimentare dolciaria"], correct: 2 },
+            { q: "In che modo l'igiene (es. lavarsi le mani) e i vaccini combattono l'antibiotico-resistenza?", options: ["Rendono gli antibiotici più potenti", "Riducono il numero di infezioni contratte, diminuendo la necessità di usare antibiotici", "Mutano il DNA umano proteggendoci", "Indeboliscono la parete cellulare batterica prima dell'infezione"], correct: 1 }
+        ];
+
+        // Game State Variables
+        let activeQuestions = [];
+        let currentQIndex = 0;
+        let mistakes = 0;
+        let correctAnswers = 0;
+        let isAnswering = false;
+        
+        // Timer Variables
+        const TIME_LIMIT = 60;
+        let timeLeft = TIME_LIMIT;
+        let timerInterval;
+
+        // DOM Elements
+        const screens = {
+            study: document.getElementById('study-screen'),
+            level: document.getElementById('level-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            end: document.getElementById('end-screen')
+        };
+        
+        const ui = {
+            qText: document.getElementById('question-text'),
+            options: document.getElementById('options-container'),
+            progText: document.getElementById('progress-text'),
+            timerText: document.getElementById('timer-text'),
+            timerBar: document.getElementById('timer-bar'),
+            feedback: document.getElementById('feedback-msg')
+        };
+
+        // Navigation
+        function switchScreen(screenKey) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[screenKey].classList.add('active');
+        }
+
+        function goToLevelSelection() {
+            switchScreen('level');
+        }
+
+        // Utils: Shuffle Array (Fisher-Yates)
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        // Start Game with selected difficulty
+        function startGame(numQuestions) {
+            // Shuffle all questions and pick the required amount
+            let shuffled = shuffleArray([...allQuestions]);
+            activeQuestions = shuffled.slice(0, numQuestions);
+            
+            currentQIndex = 0;
+            mistakes = 0;
+            correctAnswers = 0;
+            
+            loadQuestion();
+            switchScreen('quiz');
+        }
+
+        // Timer Functions
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = TIME_LIMIT;
+            updateTimerUI();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                
+                if (timeLeft <= 0) {
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            ui.timerText.innerText = `${timeLeft}s`;
+            const percentage = (timeLeft / TIME_LIMIT) * 100;
+            ui.timerBar.style.width = `${percentage}%`;
+            
+            // Color logic: Blue -> Orange -> Red
+            if (percentage > 50) {
+                ui.timerBar.className = 'h-full timer-bar bg-brand-blue';
+                ui.timerText.className = 'font-bold text-3xl text-brand-blue font-mono';
+            } else if (percentage > 20) {
+                ui.timerBar.className = 'h-full timer-bar bg-orange-500';
+                ui.timerText.className = 'font-bold text-3xl text-orange-500 font-mono';
+            } else {
+                ui.timerBar.className = 'h-full timer-bar bg-red-500';
+                ui.timerText.className = 'font-bold text-3xl text-red-500 font-mono animate-pulse';
+            }
+        }
+
+        // Load a single question
+        function loadQuestion() {
+            isAnswering = false;
+            const qData = activeQuestions[currentQIndex];
+            
+            // UI Setup
+            ui.progText.innerText = `${currentQIndex + 1} / ${activeQuestions.length}`;
+            ui.qText.innerText = qData.q;
+            ui.feedback.style.opacity = '0';
+            
+            // Start Clock
+            startTimer();
+
+            // Setup Options
+            ui.options.innerHTML = '';
+            
+            // To randomize options visually but keep track of correct answer, we map them
+            let ops = qData.options.map((text, idx) => ({ text, isCorrect: idx === qData.correct }));
+            ops = shuffleArray(ops);
+
+            ops.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-4 md:p-6 rounded-2xl bg-white/5 border border-white/10 text-white font-medium text-lg lg:text-xl flex items-center justify-between';
+                btn.innerHTML = `<span>${opt.text}</span>`;
+                btn.onclick = () => handleAnswer(opt.isCorrect, btn, ops);
+                ui.options.appendChild(btn);
+            });
+        }
+
+        // Handle Click on Answer
+        function handleAnswer(isCorrect, btnElement, allOpsArr) {
+            if (isAnswering) return;
+            isAnswering = true;
+            clearInterval(timerInterval); // Stop clock
+            
+            if (isCorrect) {
+                correctAnswers++;
+                btnElement.classList.add('option-correct');
+                showFeedback(true, "Esatto!");
+            } else {
+                mistakes++;
+                btnElement.classList.add('option-wrong', 'animate-shake');
+                
+                // Highlight the correct one
+                const buttons = ui.options.querySelectorAll('button');
+                allOpsArr.forEach((opt, idx) => {
+                    if(opt.isCorrect) buttons[idx].classList.add('border-brand-green', 'text-brand-green', 'bg-brand-green/10');
+                });
+
+                showFeedback(false, "Risposta errata.");
+            }
+
+            // Next Q after delay
+            setTimeout(nextQuestion, 2000);
+        }
+
+        // Handle Time Expired
+        function handleTimeOut() {
+            if (isAnswering) return;
+            isAnswering = true;
+            clearInterval(timerInterval);
+            mistakes++;
+            
+            // Highlight the correct one
+            const qData = activeQuestions[currentQIndex];
+            const buttons = ui.options.querySelectorAll('button');
+            
+            showFeedback(false, "Tempo scaduto!");
+            
+            setTimeout(nextQuestion, 2000);
+        }
+
+        function showFeedback(success, text) {
+            ui.feedback.innerHTML = `
+                <span class="${success ? 'text-brand-green' : 'text-red-500'}">
+                    ${text}
+                </span>
+            `;
+            ui.feedback.style.opacity = '1';
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            if (currentQIndex >= activeQuestions.length) {
+                endGame();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        // End Game logic & Stats
+        function endGame() {
+            const total = activeQuestions.length;
+            const accuracy = (correctAnswers / total) * 100;
+            
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-correct').innerText = correctAnswers;
+            document.getElementById('stat-mistakes').innerText = mistakes;
+            
+            const msgEl = document.getElementById('end-message');
+            
+            // Judgment phrasing
+            if (accuracy === 100) {
+                msgEl.innerHTML = "Perfetto! Hai dimostrato una conoscenza impeccabile del manuale. Sei pronto per entrare nel team di ricerca avanzata.";
+                msgEl.className = "text-xl text-brand-green mb-8 leading-relaxed font-bold";
+            } else if (accuracy >= 80) {
+                msgEl.innerHTML = "Ottimo lavoro! Conosci molto bene i concetti fondamentali degli antibiotici e della prevenzione AMR.";
+                msgEl.className = "text-xl text-brand-blue mb-8 leading-relaxed font-bold";
+            } else if (accuracy >= 50) {
+                msgEl.innerHTML = "Buon tentativo, ma ci sono diverse lacune. Rileggere attentamente la sezione sulla differenza tra batteriostatici e battericidi potrebbe aiutare.";
+                msgEl.className = "text-xl text-yellow-500 mb-8 leading-relaxed font-medium";
+            } else {
+                msgEl.innerHTML = "Risultato insufficiente. L'antibiotico-resistenza è un tema delicato, ti consigliamo vivamente di rileggere il manuale introduttivo.";
+                msgEl.className = "text-xl text-red-400 mb-8 leading-relaxed font-medium";
+            }
+
+            switchScreen('end');
+        }
+    </script>
+</body>
+</html>

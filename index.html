@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMASlab - Laboratorio di Microbiologia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#0ea5e9',   /* Sky Blue */
+                            green: '#10b981',  /* Emerald Green */
+                            dark: '#0f172a',   /* Slate 900 */
+                            card: 'rgba(30, 41, 59, 0.7)' /* Slate 800 trasparente */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* Effetto Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.8) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Animazione entrata sezioni (Reveal) */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Gestione menu a tendina */
+        .dropdown-hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, -10px);
+            transition: all 0.2s ease;
+        }
+        .group:hover .dropdown-hidden {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, 0);
+        }
+
+        /* Scrollbar personalizzata */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden relative">
+
+    <!-- Sfondo decorativo -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-brand-blue rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-brand-green rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
+        <div class="absolute top-[40%] left-[30%] w-[30rem] h-[30rem] bg-indigo-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-10"></div>
+    </div>
+
+    <!-- Header Sticky -->
+    <header class="fixed w-full top-0 z-50 glass border-b border-white/10">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="#" class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-brand-blue to-brand-green flex items-center gap-2">
+                    <svg class="w-8 h-8 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    TMASlab
+                </a>
+
+                <!-- Navigazione Desktop -->
+                <nav class="hidden md:flex items-center gap-6">
+                    <ul class="flex space-x-6 items-center">
+                   <!-- Dropdown NdR2026 -->
+                        <li class="relative group z-50">
+                            <button class="flex items-center justify-center px-4 py-2 rounded-lg bg-gradient-to-r from-brand-blue/10 to-brand-green/10 border border-brand-green/30 hover:border-brand-green/70 text-white font-semibold transition-all">
+                                NdR2026
+                                <svg class="w-4 h-4 ml-1 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            
+                            <!-- QUI MODIFICATO: Aggiunto bg-slate-900/95 e backdrop-blur-xl -->
+                            <div class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-slate-900/95 backdrop-blur-xl rounded-xl overflow-hidden dropdown-hidden shadow-2xl border border-white/20">
+                                <a href="ndr2026_game.html" class="block px-4 py-3 hover:bg-slate-800 text-brand-green font-bold text-sm text-center transition-colors border-b border-white/10">
+                                    Gioca
+                                </a>
+                                <a href="ndr2026_quiz.html" class="block px-4 py-3 hover:bg-slate-800 text-brand-blue font-bold text-sm text-center transition-colors border-b border-white/10 whitespace-nowrap">
+                                    Lab Challenge
+                                </a>
+                                        <a href="ndr2026_halometer.html" class="block px-4 py-3 hover:bg-slate-800 text-fuchsia-400 font-bold text-sm text-center transition-colors border-b border-white/10 whitespace-nowrap">
+                HaloMeter
+            </a>
+                                <a href="#ndr2026" class="block px-4 py-3 hover:bg-slate-800 text-slate-200 text-sm text-center transition-colors">
+                                    Info Evento
+                                </a>
+                            </div>
+                        </li>
+                        <li><a href="#antibiotici" class="text-slate-300 hover:text-brand-green transition-colors text-sm font-medium">Antibiotici</a></li>
+                        <li><a href="#resistenza" class="text-slate-300 hover:text-brand-green transition-colors text-sm font-medium">Antibiotico resistenza</a></li>
+                        <li><a href="#virus" class="text-slate-300 hover:text-brand-blue transition-colors text-sm font-medium">Virus</a></li>
+                        <li><a href="#protozoi" class="text-slate-300 hover:text-brand-blue transition-colors text-sm font-medium">Protozoi</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center justify-center pt-20 px-6">
+        <div class="text-center max-w-4xl mx-auto reveal active">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-green">TMASlab</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
+                Viaggio al centro della microbiologia: dai patogeni più piccoli alle battaglie microscopiche della resistenza agli antibiotici. Un laboratorio aperto alla scoperta.
+            </p>
+
+    <!-- Content Sections -->
+    <main class="container mx-auto px-6 pb-24 space-y-32">
+
+    <!-- SEZIONE NdR 2026 -->
+        <section id="ndr2026" class="reveal scroll-mt-24">
+            <div class="glass-card rounded-3xl p-8 md:p-12 overflow-hidden relative">
+                <div class="flex flex-col lg:flex-row items-center gap-12 relative z-10">
+                    
+                    <!-- Colonna Sinistra: Testo e Bottoni -->
+                    <div class="flex-1 space-y-6">
+                        <div class="inline-block px-4 py-1.5 rounded-full bg-brand-blue/20 text-brand-blue text-sm font-bold tracking-widest uppercase border border-brand-blue/30">
+                            Evento Speciale
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-white">Notte dei Ricercatori <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue to-brand-green">2026</span></h2>
+                        <p class="text-lg text-slate-300 leading-relaxed">
+                            Quest'anno il laboratorio <strong>TMASlab</strong> apre le sue porte al pubblico per un'esperienza divulgativa senza precedenti, vieni a trovarci il 26 Settembre nel Campus dell'Università degli studi "G. D'Annunzio" e scopri come combattere i microrganismi che popolano il nostro mondo e come rispettare quelli che abitano il nostro corpo.
+                        </p>
+                        <p class="text-lg text-slate-300 leading-relaxed">
+                            Mettiti nei panni di un ricercatore: identifica i patogeni, studia le mutazioni virali e contribuisci virtualmente a sintetizzare nuove cure attraverso i nostri serious game educativi.
+                        </p>
+                        
+                        <!-- Contenitore Bottoni -->
+                        <div class="pt-4 flex flex-wrap gap-4">
+                            <a href="ndr2026_game.html" class="px-6 py-3 bg-brand-green/20 hover:bg-brand-green/30 text-brand-green border border-brand-green/50 rounded-xl font-bold transition-all flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                Gioca
+                            </a>
+                            <a href="ndr2026_quiz.html" class="px-6 py-3 bg-brand-green/20 hover:bg-brand-green/30 text-brand-green border border-brand-green/50 rounded-xl font-bold transition-all flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                </svg>
+                                Lab Challenge
+                            </a>
+                            <a href="ndr2026_halometer.html" class="px-6 py-3 bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-400 border border-fuchsia-500/50 rounded-xl font-bold transition-all flex items-center gap-2">
+    <!-- Icona SVG Righello -->
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.17 3.23a2 2 0 0 0-2.83 0L3.23 18.34a2 2 0 0 0 0 2.83 2 2 0 0 0 2.83 0L21.17 6.06a2 2 0 0 0 0-2.83Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 6.5 1.5 1.5" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 10.5 1.5 1.5" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m8 14.5 1.5 1.5" />
+    </svg>
+    HaloMeter
+</a>
+                        </div>
+                    </div>
+
+                    <!-- Colonna Destra: Nuova Ampolla -->
+                    <div class="flex-1 flex justify-center w-full max-w-md mx-auto relative group">
+                        <!-- Effetto di bagliore (Glow) posteriore -->
+                        <div class="absolute inset-0 bg-gradient-to-tr from-sky-400/20 to-emerald-400/20 rounded-full blur-[80px] opacity-50 group-hover:opacity-80 transition-opacity duration-1000"></div>
+                        
+                        <!-- SVG: Nuova Ampolla Scienza Pubblica -->
+                        <svg viewBox="0 0 400 400" class="w-full h-auto filter drop-shadow-[0_10px_30px_rgba(14,165,233,0.4)] relative z-10 transition-transform duration-700 group-hover:scale-105">
+                            <defs>
+                                <linearGradient id="newFlaskGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#0ea5e9"></stop>
+                                    <stop offset="100%" stop-color="#10b981"></stop>
+                                </linearGradient>
+                                <radialGradient id="newGlowGlow" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="#fff" stop-opacity="1" />
+                                    <stop offset="40%" stop-color="#10b981" stop-opacity="0.8" />
+                                    <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
+                                </radialGradient>
+                            </defs>
+
+                            <!-- Liquido Magico (Conoscenza) -->
+                            <path d="M 120 230 C 120 230, 95 270, 100 285 C 105 300, 120 310, 200 310 C 280 310, 295 300, 300 285 C 305 270, 280 230, 280 230 Z" fill="url(#newFlaskGrad)"></path>
+                            <ellipse cx="200" cy="230" rx="80" ry="12" fill="#10b981" opacity="0.8"></ellipse>
+
+                            <!-- Base Microscopio/Ampolla (Vetro) -->
+                            <path d="M 170 80 
+                                     L 170 30 
+                                     C 170 20, 180 15, 200 15 
+                                     C 220 15, 230 20, 230 30 
+                                     L 230 80 
+                                     C 230 110, 320 260, 310 290 
+                                     C 300 320, 260 330, 200 330 
+                                     C 140 330, 100 320, 90 290 
+                                     C 80 260, 170 110, 170 80 Z" 
+                                  fill="rgba(255,255,255,0.03)" 
+                                  stroke="rgba(255,255,255,0.5)" 
+                                  stroke-width="5" 
+                                  stroke-linejoin="round">
+                            </path>
+                            
+                            <!-- Bordo collo -->
+                            <ellipse cx="200" cy="15" rx="35" ry="8" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="5"></ellipse>
+
+                            <!-- Riflessi di luce -->
+                            <path d="M 110 280 C 105 260, 160 140, 175 90" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" opacity="0.4"></path>
+                            <line x1="178" y1="30" x2="178" y2="70" stroke="white" stroke-width="4" stroke-linecap="round" opacity="0.4"></line>
+
+                            <!-- Tacche -->
+                            <line x1="130" y1="230" x2="145" y2="230" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"></line>
+                            <line x1="120" y1="260" x2="135" y2="260" stroke="rgba(255,255,255,0.6)" stroke-width="3" stroke-linecap="round"></line>
+                            <line x1="110" y1="290" x2="120" y2="290" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"></line>
+
+                            <!-- Atomo -->
+                            <g transform="translate(200, 150)">
+                                <circle cx="0" cy="0" r="18" fill="url(#newGlowGlow)"></circle>
+                                <ellipse cx="0" cy="0" rx="50" ry="15" fill="none" stroke="#0ea5e9" stroke-width="2" transform="rotate(30)">
+                                    <animateTransform attributeName="transform" type="rotate" from="30" to="390" dur="8s" repeatCount="indefinite" />
+                                </ellipse>
+                                <ellipse cx="0" cy="0" rx="50" ry="15" fill="none" stroke="#10b981" stroke-width="2" transform="rotate(-30)">
+                                    <animateTransform attributeName="transform" type="rotate" from="-30" to="330" dur="12s" repeatCount="indefinite" />
+                                </ellipse>
+                                <ellipse cx="0" cy="0" rx="50" ry="15" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-dasharray="4,4" transform="rotate(90)">
+                                    <animateTransform attributeName="transform" type="rotate" from="90" to="-270" dur="10s" repeatCount="indefinite" />
+                                </ellipse>
+                                <circle cx="45" cy="10" r="4" fill="#0ea5e9"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" repeatCount="indefinite" /></circle>
+                                <circle cx="-45" cy="-10" r="4" fill="#10b981"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="3s" repeatCount="indefinite" /></circle>
+                            </g>
+
+                            <!-- Bolle animate -->
+                            <circle cx="160" cy="270" r="6" fill="#fff" opacity="0.6">
+                                <animate attributeName="cy" values="270; 100; -20" dur="4s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="0.6; 0.8; 0" dur="4s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="210" cy="290" r="10" fill="#fff" opacity="0.4">
+                                <animate attributeName="cy" values="290; 120; 0" dur="5s" repeatCount="indefinite" />
+                                <animate attributeName="cx" values="210; 220; 190" dur="5s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="0.4; 0.7; 0" dur="5s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx="240" cy="250" r="4" fill="#fff" opacity="0.8">
+                                <animate attributeName="cy" values="250; 80; -10" dur="3s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="0.8; 1; 0" dur="3s" repeatCount="indefinite" />
+                            </circle>
+
+                            <!-- Scintille esterne -->
+                            <g stroke-linecap="round">
+                                <path d="M 280 80 L 300 60 M 280 60 L 300 80" stroke="#10b981" stroke-width="4">
+                                    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
+                                    <animateTransform attributeName="transform" type="scale" values="0.8;1.2;0.8" dur="2s" repeatCount="indefinite" />
+                                </path>
+                                <path d="M 100 90 L 120 70 M 100 70 L 120 90" stroke="#0ea5e9" stroke-width="4">
+                                    <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite" />
+                                    <animateTransform attributeName="transform" type="scale" values="0.8;1.2;0.8" dur="3s" repeatCount="indefinite" />
+                                </path>
+                                <path d="M 320 180 L 320 150 M 305 165 L 335 165" stroke="#fff" stroke-width="3" opacity="0.7">
+                                    <animate attributeName="opacity" values="0.3;0.9;0.3" dur="4s" repeatCount="indefinite" />
+                                </path>
+                            </g>
+                        </svg>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ANTIBIOTICI & TIMELINE -->
+        <section id="antibiotici" class="reveal scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="p-4 rounded-2xl bg-brand-green/20 text-brand-green">
+                    <!-- Pill SVG -->
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                </div>
+                <h2 class="text-4xl font-bold text-white">Antibiotici</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- Descrizione -->
+                <div class="glass-card p-8 rounded-3xl h-fit">
+                    <p class="text-slate-300 leading-relaxed text-lg mb-6">
+                        Gli antibiotici sono molecole in grado di uccidere i batteri o inibirne la crescita. Rivoluzionando la medicina moderna, hanno reso curabili malattie un tempo letali. Funzionano bersagliando strutture specifiche del batterio, come la parete cellulare o i meccanismi di sintesi delle proteine.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed text-lg">
+                        Tuttavia, queste "armi magiche" sono inefficaci contro i virus. Il loro uso mirato è fondamentale per preservarne l'efficacia nel tempo.
+                    </p>
+                </div>
+
+                <!-- Timeline Antibiotici -->
+                <div class="glass p-8 rounded-3xl">
+                    <h3 class="text-2xl font-bold mb-6 text-brand-green">La Storia delle Cure</h3>
+                    <div class="relative border-l-2 border-brand-green/30 ml-3 py-2">
+                        <!-- Nodo 1 -->
+                        <div class="mb-10 ml-8 relative">
+                            <span class="absolute -left-[41px] w-4 h-4 rounded-full bg-brand-green ring-4 ring-slate-900 mt-1.5"></span>
+                            <h4 class="text-xl font-bold text-white">1928</h4>
+                            <p class="text-slate-400 mt-1">Alexander Fleming scopre accidentalmente la <strong>Penicillina</strong>, il primo vero antibiotico, osservando una muffa che distruggeva i batteri.</p>
+                        </div>
+                        <!-- Nodo 2 -->
+                        <div class="mb-10 ml-8 relative">
+                            <span class="absolute -left-[41px] w-4 h-4 rounded-full bg-brand-green ring-4 ring-slate-900 mt-1.5"></span>
+                            <h4 class="text-xl font-bold text-white">1940s - 1960s</h4>
+                            <p class="text-slate-400 mt-1"><strong>L'età dell'oro.</strong> Vengono scoperte e prodotte le principali classi di antibiotici tutt'oggi in uso, salvando milioni di vite durante e dopo la guerra.</p>
+                        </div>
+                        <!-- Nodo 3 -->
+                        <div class="ml-8 relative">
+                            <span class="absolute -left-[41px] w-4 h-4 rounded-full bg-brand-green ring-4 ring-slate-900 mt-1.5"></span>
+                            <h4 class="text-xl font-bold text-white">Oggi</h4>
+                            <p class="text-slate-400 mt-1">La scoperta di nuove molecole ha subito un drastico rallentamento (il "Discovery Void"). La ricerca globale cerca disperatamente soluzioni alternative.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANTIBIOTICO RESISTENZA & TIMELINE -->
+        <section id="resistenza" class="reveal scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="p-4 rounded-2xl bg-red-500/20 text-red-400">
+                    <!-- Shield Alert SVG -->
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h2 class="text-4xl font-bold text-white">Antibiotico Resistenza</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- Timeline Resistenza -->
+                <div class="glass p-8 rounded-3xl order-2 md:order-1">
+                    <h3 class="text-2xl font-bold mb-6 text-red-400">L'evoluzione della minaccia</h3>
+                    <div class="relative border-l-2 border-red-500/30 ml-3 py-2">
+                        <!-- Nodo 1 -->
+                        <div class="mb-10 ml-8 relative">
+                            <span class="absolute -left-[41px] w-4 h-4 rounded-full bg-red-500 ring-4 ring-slate-900 mt-1.5"></span>
+                            <h4 class="text-xl font-bold text-white">1940</h4>
+                            <p class="text-slate-400 mt-1">Viene identificata la prima <strong>penicillinasi</strong> (un enzima batterico che distrugge la penicillina) ancor prima dell'uso di massa del farmaco stesso.</p>
+                        </div>
+                        <!-- Nodo 2 -->
+                        <div class="mb-10 ml-8 relative">
+                            <span class="absolute -left-[41px] w-4 h-4 rounded-full bg-red-500 ring-4 ring-slate-900 mt-1.5"></span>
+                            <h4 class="text-xl font-bold text-white">Anni '90</h4>
+                            <p class="text-slate-400 mt-1">Emergono i "Super-batteri" multi-resistenti (come MRSA e VRSA) negli ospedali di tutto il mondo, eludendo quasi ogni cura conosciuta.</p>
+                        </div>
+                        <!-- Nodo 3 -->
+                        <div class="ml-8 relative">
+                            <span class="absolute -left-[41px] w-4 h-4 rounded-full bg-red-500 ring-4 ring-slate-900 mt-1.5"></span>
+                            <h4 class="text-xl font-bold text-white">Previsioni 2050</h4>
+                            <p class="text-slate-400 mt-1">Se non si inverte la tendenza, si stima che le infezioni resistenti causeranno fino a 10 milioni di vittime all'anno, superando il cancro.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Descrizione -->
+                <div class="glass-card p-8 rounded-3xl order-1 md:order-2 h-fit">
+                    <p class="text-slate-300 leading-relaxed text-lg mb-6">
+                        L'antibiotico-resistenza (AMR) è un fenomeno naturale di evoluzione: i batteri mutano e sviluppano meccanismi per sopravvivere ai farmaci progettati per ucciderli, come scudi molecolari o pompe di espulsione.
+                    </p>
+                    <p class="text-slate-300 leading-relaxed text-lg mb-6">
+                        L'uso eccessivo e scorretto degli antibiotici in medicina umana, veterinaria e negli allevamenti ha accelerato drasticamente questo processo. I batteri resistenti sopravvivono, si moltiplicano e trasferiscono i loro "geni corazzati" ad altri batteri.
+                    </p>
+                    <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-xl mt-4">
+                        <span class="font-bold text-red-400">Allarme Globale:</span> Oggi è considerata dall'Organizzazione Mondiale della Sanità (OMS) una delle 10 principali minacce per la salute pubblica.
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 glass mt-12">
+        <div class="container mx-auto px-6 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <svg class="w-6 h-6 text-brand-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    <span class="font-bold text-lg tracking-wider text-slate-300">TMASlab</span>
+                </div>
+                <p class="text-slate-500 text-sm text-center">
+                    &copy; 2026 TMASlab. Tutti i diritti riservati.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script per le animazioni allo scroll (Intersection Observer) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reveals = document.querySelectorAll('.reveal');
+            
+            const revealOptions = {
+                threshold: 0.15,
+                rootMargin: "0px 0px -50px 0px"
+            };
+
+            const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    } else {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target); // Ferma l'osservazione dopo che è apparso
+                    }
+                });
+            }, revealOptions);
+
+            reveals.forEach(reveal => {
+                revealOnScroll.observe(reveal);
+            });
+            
+            // Attiva immediatamente le sezioni già visibili
+            setTimeout(() => {
+                reveals.forEach(reveal => {
+                    if(reveal.getBoundingClientRect().top < window.innerHeight) {
+                        reveal.classList.add('active');
+                    }
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>

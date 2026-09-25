@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANIMALCULES - HaloMeter</title>
+    
+    <!-- Font giocosi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'magic': ['"Fredoka One"', 'cursive'],
+                        'body': ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        enchanted: {
+                            bg: '#1a0b2e',
+                            path: '#21cf8d', // Verde magico
+                            magic: '#d81159', // Rosso/Rosa magia
+                            glow: '#0EA5E9',  // Azzurro
+                            pill: '#fbbf24'   // Giallo pillola
+                        }
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'float-delayed': 'float 3.5s ease-in-out infinite 1s',
+                        'pop-in': 'popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        // Animazioni di battaglia gestite via classi CSS nel tag <style>
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.5)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #1a0b2e;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(216, 17, 89, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(14, 165, 233, 0.2) 0%, transparent 50%);
+            color: white;
+            overflow: hidden; /* Evita scroll durante le animazioni */
+        }
+
+        .glass-panel {
+            background: rgba(40, 20, 60, 0.7);
+            backdrop-filter: blur(16px);
+            border: 4px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255,255,255,0.05);
+        }
+
+        .btn-giocoso {
+            background: linear-gradient(180deg, #21cf8d, #10b981);
+            box-shadow: 0 8px 0 #059669, 0 15px 20px rgba(33, 207, 141, 0.4);
+            transition: all 0.1s;
+        }
+        .btn-giocoso:active {
+            transform: translateY(8px);
+            box-shadow: 0 0px 0 #059669, 0 5px 10px rgba(33, 207, 141, 0.4);
+        }
+
+        .input-magico {
+            background: rgba(255,255,255,0.1);
+            border: 4px solid #0EA5E9;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.3) inset;
+        }
+        .input-magico:focus {
+            outline: none;
+            border-color: #21cf8d;
+            box-shadow: 0 0 30px rgba(33, 207, 141, 0.5) inset;
+        }
+
+        /* --- RIMOZIONE SCROLLBAR E FRECCE DA INPUT --- */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            overflow: hidden; /* Evita lo scroll interno */
+        }
+
+        /* --- ANIMAZIONI VITTORIA ANTIBIOTICO --- */
+        .anim-win-pill {
+            animation: pillSmash 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes pillSmash {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            40% { transform: translate(80px, -120px) rotate(45deg); } /* Salto in alto */
+            60% { transform: translate(180px, -150px) rotate(90deg); } /* Apice */
+            80% { transform: translate(250px, 20px) rotate(135deg); } /* Schianto! */
+            100% { transform: translate(250px, 20px) rotate(135deg); }
+        }
+
+        .anim-win-bug {
+            animation: bugSquish 1.5s forwards;
+            transform-origin: bottom;
+        }
+        @keyframes bugSquish {
+            0%, 75% { transform: scale(1) translateY(0); filter: brightness(1); }
+            80% { transform: scale(1.2, 0.2) translateY(50px); filter: brightness(3); } /* Schiacciato */
+            100% { transform: scale(1.5, 0) translateY(50px); opacity: 0; } /* Scompare */
+        }
+
+        /* --- ANIMAZIONI RESISTENZA BATTERIO --- */
+        .anim-lose-pill {
+            animation: pillBounce 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes pillBounce {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            40% { transform: translate(150px, 0) rotate(45deg); } /* Attacca */
+            50% { transform: translate(200px, 0) rotate(90deg); } /* Sbatte sullo scudo */
+            70% { transform: translate(-50px, -50px) rotate(-180deg); } /* Rimbalza via */
+            100% { transform: translate(-100px, 200px) rotate(-360deg); opacity: 0; } /* Cade fuori schermo */
+        }
+
+        .anim-lose-bug {
+            animation: bugTriumph 1.5s forwards;
+        }
+        @keyframes bugTriumph {
+            0%, 45% { transform: scale(1); }
+            50% { transform: scale(0.9); } /* Contraccolpo scudo */
+            60%, 100% { transform: scale(1.3) translateY(-20px); filter: drop-shadow(0 0 20px rgba(216,17,89,0.8)); } /* Diventa più grande e cattivo */
+        }
+
+        .shield-pop {
+            animation: shieldPop 1.5s forwards;
+        }
+        @keyframes shieldPop {
+            0%, 45% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); } /* Scudo si attiva all'impatto */
+            60%, 100% { opacity: 0.8; transform: scale(1.1); box-shadow: 0 0 30px #d81159; }
+        }
+
+        /* Effetti Particellari di successo */
+        .star-burst {
+            position: absolute;
+            width: 15px; height: 15px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="font-body min-h-screen flex items-center justify-center p-4">
+
+    <!-- Ambient Decor -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-10 left-10 w-6 h-6 bg-yellow-300 rounded-full blur-[2px] animate-float opacity-50"></div>
+        <div class="absolute bottom-20 right-20 w-8 h-8 bg-enchanted-path rounded-full blur-[3px] animate-float-delayed opacity-40"></div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="glass-panel rounded-[3rem] p-8 md:p-12 w-full max-w-4xl relative z-10 text-center flex flex-col items-center min-h-[500px] justify-center overflow-hidden">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="font-magic text-6xl md:text-8xl mt-4 text-transparent bg-clip-text bg-gradient-to-r from-enchanted-pill via-white to-enchanted-path drop-shadow-lg leading-tight tracking-wider">
+                HaloMeter
+            </h1>
+        </div>
+
+        <!-- INPUT SCREEN -->
+        <div id="input-section" class="w-full animate-pop-in transition-opacity duration-300">
+            <p class="text-xl md:text-2xl text-blue-100 mb-8 font-bold">
+                Usa il tuo righello magico! Quanti millimetri misura l'alone dell'antibiotico?
+            </p>
+            
+            <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-8">
+                <div class="relative">
+                    <input type="number" id="alone-input" min="0" max="100" placeholder="Es. 12" 
+                           class="input-magico no-scrollbar rounded-3xl text-center text-5xl font-magic text-white w-48 h-32 placeholder-white/30 transition-all">
+                    <span class="absolute bottom-4 right-4 text-xl font-bold text-white/50">mm</span>
+                </div>
+                
+                <button onclick="startMagic()" class="btn-giocoso font-magic text-3xl text-white px-10 py-6 rounded-3xl w-full md:w-auto flex items-center justify-center gap-3">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    Controlla
+                </button>
+            </div>
+            <p id="error-msg" class="text-red-400 font-bold opacity-0 transition-opacity h-6">Inserisci un numero valido!</p>
+        </div>
+
+        <!-- ANIMATION BATTLE ARENA -->
+        <div id="battle-section" class="w-full hidden flex-col items-center">
+            
+            <!-- Contenitore dell'animazione -->
+            <div class="relative w-full max-w-lg h-64 border-b-4 border-white/20 mb-8 rounded-b-[50%] bg-gradient-to-t from-white/5 to-transparent flex items-end justify-between px-10 pb-4">
+                
+                <!-- PERSONAGGIO 1: La Pillola Magica (Antibiotico) -->
+                <div id="antibiotic-char" class="w-32 h-32 relative z-20">
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_10px_15px_rgba(33,207,141,0.6)]">
+                        <!-- Mantello Magico -->
+                        <path d="M20,50 Q10,80 30,90 Q40,90 50,80 Z" fill="#0EA5E9" opacity="0.8"/>
+                        <!-- Capsula Metà 1 -->
+                        <path d="M 30,50 A 20,20 0 0,1 70,50 L 70,50 L 30,50 Z" fill="#fbbf24" stroke="#fff" stroke-width="2"/>
+                        <!-- Capsula Metà 2 -->
+                        <path d="M 30,50 A 20,20 0 0,0 70,50 L 70,50 L 30,50 Z" fill="#fff" stroke="#fff" stroke-width="2"/>
+                        <!-- Occhietti Determinati -->
+                        <path d="M 40,45 L 48,50" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M 60,45 L 52,50" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="45" cy="55" r="3" fill="#000"/>
+                        <circle cx="55" cy="55" r="3" fill="#000"/>
+                        <!-- Riflesso -->
+                        <path d="M 35,40 A 15,15 0 0,1 65,40" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+                    </svg>
+                </div>
+
+                <!-- PERSONAGGIO 2: Il Batterio Dispettoso -->
+                <div id="bug-char" class="w-32 h-32 relative z-10">
+                    <!-- Scudo energetico (nascosto di default, si attiva se resiste) -->
+                    <div id="bug-shield" class="absolute -inset-4 rounded-full border-4 border-enchanted-magic bg-enchanted-magic/20 opacity-0 z-0"></div>
+                    
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_10px_15px_rgba(216,17,89,0.5)] relative z-10">
+                        <!-- Spuntini/Ciglia (Spikes del virus/batterio) -->
+                        <g stroke="#9d0039" stroke-width="6" stroke-linecap="round">
+                            <line x1="50" y1="10" x2="50" y2="20"/>
+                            <line x1="50" y1="90" x2="50" y2="80"/>
+                            <line x1="10" y1="50" x2="20" y2="50"/>
+                            <line x1="90" y1="50" x2="80" y2="50"/>
+                            <line x1="22" y1="22" x2="32" y2="32"/>
+                            <line x1="78" y1="78" x2="68" y2="68"/>
+                            <line x1="78" y1="22" x2="68" y2="32"/>
+                            <line x1="22" y1="78" x2="32" y2="68"/>
+                        </g>
+                        <!-- Corpo -->
+                        <circle cx="50" cy="50" r="35" fill="#d81159"/>
+                        <!-- Occhi Cattivi -->
+                        <circle cx="35" cy="40" r="8" fill="#fff"/>
+                        <circle cx="65" cy="40" r="8" fill="#fff"/>
+                        <circle cx="35" cy="40" r="3" fill="#000"/>
+                        <circle cx="65" cy="40" r="3" fill="#000"/>
+                        <!-- Sopracciglia arrabbiate -->
+                        <path d="M 25,30 L 45,38" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M 75,30 L 55,38" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+                        <!-- Bocca sdentata -->
+                        <path d="M 35,65 Q 50,55 65,65" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M 45,61 L 45,68 M 55,61 L 55,68" stroke="#fff" stroke-width="3"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Testo Risultato Finale -->
+            <div id="result-box" class="opacity-0 transition-opacity duration-500 transform translate-y-4">
+                <h2 id="result-title" class="font-magic text-4xl mb-2 text-white">Caricamento...</h2>
+                <p id="result-desc" class="text-xl text-blue-100 font-bold mb-8">...</p>
+                
+                <button onclick="resetGame()" class="px-8 py-4 bg-white/10 hover:bg-white/20 border-2 border-white/30 rounded-2xl text-white font-bold text-xl transition-all">
+                    Prova un'altra misura
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Riferimenti agli elementi UI
+        const inputSection = document.getElementById('input-section');
+        const battleSection = document.getElementById('battle-section');
+        const inputField = document.getElementById('alone-input');
+        const errorMsg = document.getElementById('error-msg');
+        
+        const pillChar = document.getElementById('antibiotic-char');
+        const bugChar = document.getElementById('bug-char');
+        const bugShield = document.getElementById('bug-shield');
+        
+        const resultBox = document.getElementById('result-box');
+        const resultTitle = document.getElementById('result-title');
+        const resultDesc = document.getElementById('result-desc');
+
+        function startMagic() {
+            // Pulisce errori precedenti
+            errorMsg.style.opacity = '0';
+            
+            // Legge il valore
+            const val = parseFloat(inputField.value);
+            
+            // Validazione
+            if (isNaN(val) || val < 0) {
+                errorMsg.style.opacity = '1';
+                inputField.classList.add('animate-shake');
+                setTimeout(() => inputField.classList.remove('animate-shake'), 500);
+                return;
+            }
+
+            // Cambia schermata
+            inputSection.style.opacity = '0';
+            setTimeout(() => {
+                inputSection.classList.add('hidden');
+                battleSection.classList.remove('hidden');
+                battleSection.classList.add('flex');
+                
+                // Ritardo per permettere al render di posizionare gli SVG, poi parte l'animazione
+                setTimeout(() => {
+                    playBattleAnimation(val);
+                }, 100);
+                
+            }, 300);
+        }
+
+        function playBattleAnimation(aloneSize) {
+            // Rimuove eventuali classi vecchie (se stiamo rigiocando)
+            pillChar.className = "w-32 h-32 relative z-20";
+            bugChar.className = "w-32 h-32 relative z-10";
+            bugShield.className = "absolute -inset-4 rounded-full border-4 border-enchanted-magic bg-enchanted-magic/20 opacity-0 z-0";
+
+            if (aloneSize > 10) {
+                // VITTORIA DELL'ANTIBIOTICO (Suscettibile)
+                pillChar.classList.add('anim-win-pill');
+                
+                // Il batterio viene schiacciato dopo che la pillola è saltata (circa 1 secondo)
+                setTimeout(() => {
+                    bugChar.classList.add('anim-win-bug');
+                    createSparks(bugChar, '#21cf8d'); // Scintille verdi
+                }, 1000);
+
+                // Mostra risultato
+                setTimeout(() => {
+                    showResult(
+                        "Super Vittoria!", 
+                        "text-enchanted-path", 
+                        `L'alone è grande (${aloneSize}mm)! L'antibiotico è riuscito a sconfiggere il batterio dispettoso.`
+                    );
+                }, 1800);
+
+            } else {
+                // VITTORIA DEL BATTERIO (Resistente)
+                pillChar.classList.add('anim-lose-pill');
+                
+                // Lo scudo si attiva al momento dell'impatto (circa 0.7 secondi)
+                setTimeout(() => {
+                    bugShield.classList.add('shield-pop');
+                    bugChar.classList.add('anim-lose-bug');
+                    createSparks(bugShield, '#d81159'); // Scintille rosse di collisione
+                }, 700);
+
+                // Mostra risultato
+                setTimeout(() => {
+                    showResult(
+                        "Oh no, Resiste!", 
+                        "text-enchanted-magic", 
+                        `L'alone è troppo piccolo (${aloneSize}mm). Il batterio è super-forte e ha respinto la magia!`
+                    );
+                }, 1800);
+            }
+        }
+
+        function showResult(title, titleColorClass, desc) {
+            resultTitle.innerText = title;
+            resultTitle.className = `font-magic text-4xl md:text-5xl mb-4 ${titleColorClass} drop-shadow-lg`;
+            resultDesc.innerText = desc;
+            
+            resultBox.classList.remove('opacity-0', 'translate-y-4');
+            resultBox.classList.add('opacity-100', 'translate-y-0');
+        }
+
+        function resetGame() {
+            // Nascondi risultato
+            resultBox.classList.add('opacity-0', 'translate-y-4');
+            resultBox.classList.remove('opacity-100', 'translate-y-0');
+            
+            // Ripristina input
+            inputField.value = '';
+            
+            // Torna alla schermata iniziale
+            setTimeout(() => {
+                battleSection.classList.add('hidden');
+                battleSection.classList.remove('flex');
+                
+                inputSection.classList.remove('hidden');
+                
+                // Rimuove tutte le animazioni
+                pillChar.className = "w-32 h-32 relative z-20 animate-float";
+                bugChar.className = "w-32 h-32 relative z-10 animate-float-delayed";
+                bugShield.className = "absolute -inset-4 rounded-full border-4 border-enchanted-magic bg-enchanted-magic/20 opacity-0 z-0";
+                
+                // Rimuovi eventuali scintille rimaste
+                document.querySelectorAll('.star-burst').forEach(e => e.remove());
+
+                // Mostra input (trigger reflow)
+                void inputSection.offsetWidth;
+                inputSection.style.opacity = '1';
+                
+            }, 500);
+        }
+
+        // Sistema di particelle per esplosioni e impatti
+        function createSparks(parentEl, colorHex) {
+            for(let i=0; i<10; i++) {
+                const sp = document.createElement('div');
+                sp.className = 'star-burst';
+                sp.style.backgroundColor = colorHex;
+                sp.style.left = '50%';
+                sp.style.top = '50%';
+                
+                const angle = (i / 10) * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                sp.style.transition = 'all 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
+                parentEl.appendChild(sp);
+                
+                // Forza reflow e lancia
+                setTimeout(() => {
+                    sp.style.opacity = '1';
+                    sp.style.transform = `translate(-50%, -50%) translate(${tx}px, ${ty}px) scale(0)`;
+                }, 10);
+            }
+        }
+
+        // Assegna stato idle (float) iniziale
+        pillChar.classList.add('animate-float');
+        bugChar.classList.add('animate-float-delayed');
+        
+        // Permette di premere INVIO nell'input
+        inputField.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                startMagic();
+            }
+        });
+    </script>
+</body>
+</html>
