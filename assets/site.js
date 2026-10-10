@@ -1,0 +1,24 @@
+(() => {
+  const menu = document.querySelector('.menu-button');
+  const nav = document.getElementById('site-navigation');
+  if (menu && nav) {
+    menu.addEventListener('click', () => { const open = menu.getAttribute('aria-expanded') !== 'true'; menu.setAttribute('aria-expanded', String(open)); nav.classList.toggle('open', open); });
+    document.addEventListener('keydown', event => { if(event.key === 'Escape' && menu.getAttribute('aria-expanded') === 'true'){ menu.setAttribute('aria-expanded','false'); nav.classList.remove('open'); menu.focus(); } });
+  }
+  const lab = document.getElementById('lab-challenge');
+  if (lab) {
+    const questions = [
+      {q:'Quale affermazione sugli antibiotici è corretta?', options:['Agiscono allo stesso modo contro batteri e virus.','Possono uccidere i batteri o inibirne la crescita.','Eliminano sempre tutti i microrganismi presenti.'], correct:1, explanation:'Gli antibiotici agiscono su bersagli batterici. Non sono efficaci contro i virus; il loro impiego richiede una valutazione appropriata.'},
+      {q:'Che cosa caratterizza un biofilm?', options:['È una comunità microbica associata a superfici e a una matrice.','È sempre formato da una singola cellula.','È un sinonimo di resistenza genetica agli antibiotici.'], correct:0, explanation:'Il biofilm è un modo di organizzarsi dei microrganismi. Il comportamento delle cellule nel biofilm può differire da quello delle cellule nelle colture convenzionali.'},
+      {q:'Che cosa significa drug repurposing?', options:['Cambiare soltanto il nome commerciale di un farmaco.','Usare qualsiasi farmaco senza verificarne gli effetti.','Studiare nuovi possibili impieghi di molecole già esistenti.'], correct:2, explanation:'Il riposizionamento esplora nuovi possibili impieghi. Un risultato sperimentale richiede ulteriori verifiche prima di ipotizzare un’applicazione clinica.'}
+    ];
+    let current=0, score=0, answered=false;
+    const question=lab.querySelector('.game-question'), options=lab.querySelector('.answer-options'), feedback=lab.querySelector('.feedback'), next=lab.querySelector('[data-next]'), progress=lab.querySelector('.game-progress');
+    function render(){ answered=false; const item=questions[current]; progress.textContent=`Domanda ${current+1} di ${questions.length}`; question.textContent=item.q; options.replaceChildren(); feedback.textContent=''; next.hidden=true; item.options.forEach((text,index)=>{const button=document.createElement('button');button.type='button';button.className='answer-button';button.textContent=text;button.addEventListener('click',()=>choose(index));options.append(button);}); }
+    function choose(index){if(answered)return;answered=true;const item=questions[current];const correct=index===item.correct;if(correct)score++;Array.from(options.children).forEach((button,i)=>{button.disabled=true;if(i===item.correct)button.classList.add('correct');else if(i===index)button.classList.add('incorrect');});feedback.textContent=(correct?'Risposta corretta. ':'Riprova il ragionamento. ')+item.explanation;next.textContent=current===questions.length-1?'Vedi il risultato':'Prossima domanda';next.hidden=false;}
+    next.addEventListener('click',()=>{if(current<questions.length-1){current++;render();question.focus();}else{progress.textContent='Sfida completata';question.textContent=`Hai risposto correttamente a ${score} domande su ${questions.length}.`;options.replaceChildren();feedback.textContent='La ricerca comincia dalle domande: continua a esplorare biofilm e strategie antimicrobiche.';next.hidden=true;const restart=document.createElement('button');restart.className='button primary';restart.type='button';restart.textContent='Ricomincia';restart.addEventListener('click',()=>{current=0;score=0;render();});options.append(restart);}});
+    render();
+  }
+  const halo = document.getElementById('halometer');
+  if(halo){let index=0;const values=[18,24,28];const circle=halo.querySelector('[data-zone]');const input=halo.querySelector('input');const feedback=halo.querySelector('.feedback');const form=halo.querySelector('form');const other=halo.querySelector('[data-other]');function update(){circle.setAttribute('r',String(values[index]*5/2));input.value='';feedback.textContent='';}form.addEventListener('submit',event=>{event.preventDefault();const value=Number(input.value);if(!input.value||!Number.isFinite(value)||value<=0){feedback.textContent='Inserisci una misura positiva in millimetri.';return;}const actual=values[index];feedback.textContent=Math.abs(value-actual)<=1?`Misura corretta: il diametro illustrato è ${actual} mm.`:`Il diametro illustrato è ${actual} mm. Confronta i bordi del cerchio con la scala: conta la distanza completa, da un lato all’altro.`;});other.addEventListener('click',()=>{index=(index+1)%values.length;update();input.focus();});update();}
+})();
